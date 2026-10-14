@@ -59,25 +59,25 @@ export default function OrderTracking() {
   const steps = [
     {
       key: 'pending',
-      title: 'Order Placed',
-      description: 'Your order has been received by Rab Razi kitchen',
+      title: 'Order Confirmed (Pending Approval)',
+      description: 'Order received. Waiting for admin approval to start cooking in kitchen',
       icon: FileText
     },
     {
       key: 'preparing',
-      title: 'Cooking in Kitchen',
-      description: 'Fresh spices & cuts simmering on the stove',
+      title: 'Approved & Cooking in Kitchen',
+      description: 'Admin approved your order! Fresh spices & cuts simmering on the stove',
       icon: ChefHat
     },
     {
       key: 'on_the_way',
-      title: 'Out for Delivery',
-      description: 'Rider is on bike heading to your house',
+      title: 'Out for Delivery (On Bike)',
+      description: 'Rider is on bike heading to your house with hot food',
       icon: Bike
     },
     {
       key: 'delivered',
-      title: 'Delivered',
+      title: 'Delivered Successfully',
       description: 'Enjoy your hot meal! Rab Razi Blessings',
       icon: CheckCircle
     }
@@ -295,8 +295,8 @@ export default function OrderTracking() {
                       : currentOrder.status === 'on_the_way'
                       ? `${riderLiveLocation?.distanceRemaining || '1.1 km'} away (~${riderLiveLocation?.etaMinutes || 4} mins)`
                       : currentOrder.status === 'preparing'
-                      ? 'Cooking (~20-25 mins)'
-                      : 'Received (~35 mins)'}
+                      ? 'Approved & Cooking in Kitchen 🍳 (~20-25 mins)'
+                      : 'Order Confirmed • Pending Admin Approval ⏳'}
                   </span>
                 </div>
               </div>

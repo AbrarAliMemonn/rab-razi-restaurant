@@ -823,9 +823,10 @@ export default function AdminPanel() {
                         {isPending && (
                           <button
                             onClick={() => updateOrderStatus(order.id, 'preparing')}
-                            className="px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-zinc-950 shadow-lg shadow-orange-950/40 transition-all active:scale-95 flex items-center gap-1.5"
+                            className="px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-500 via-amber-500 to-orange-500 hover:from-emerald-400 hover:to-orange-400 text-zinc-950 shadow-lg shadow-orange-950/40 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
                           >
-                            <span>Send to Kitchen (باورچی خانے بھیجیں) 🍳</span>
+                            <CheckCircle className="w-3.5 h-3.5 stroke-[2.5]" />
+                            <span>Approve & Send to Kitchen (منظور کریں 🍳)</span>
                           </button>
                         )}
 

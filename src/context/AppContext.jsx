@@ -138,14 +138,30 @@ export function AppProvider({ children }) {
     }
   });
 
-  // Listen to cross-window BroadcastChannel and Storage changes for Live GPS
+  // Listen to cross-window BroadcastChannel and Storage changes for Live Orders & GPS
   useEffect(() => {
-    let bc = null;
+    let gpsBc = null;
+    let ordersBc = null;
+
     try {
-      bc = new BroadcastChannel('rab_razi_gps_feed');
-      bc.onmessage = (event) => {
+      gpsBc = new BroadcastChannel('rab_razi_gps_feed');
+      gpsBc.onmessage = (event) => {
         if (event.data) {
           setRiderLiveLocation(event.data);
+        }
+      };
+    } catch {
+      // fallback
+    }
+
+    try {
+      ordersBc = new BroadcastChannel('rab_razi_orders_feed');
+      ordersBc.onmessage = (event) => {
+        if (event.data && event.data.type === 'ORDERS_UPDATED') {
+          setOrders(event.data.orders);
+          if (event.data.message) {
+            showToast(event.data.message, event.data.msgType || 'info');
+          }
         }
       };
     } catch {
@@ -160,12 +176,20 @@ export function AppProvider({ children }) {
           // ignore
         }
       }
+      if (e.key === 'rrr_orders' && e.newValue) {
+        try {
+          setOrders(JSON.parse(e.newValue));
+        } catch {
+          // ignore
+        }
+      }
     };
 
     window.addEventListener('storage', handleStorage);
 
     return () => {
-      if (bc) bc.close();
+      if (gpsBc) gpsBc.close();
+      if (ordersBc) ordersBc.close();
       window.removeEventListener('storage', handleStorage);
     };
   }, []);
@@ -325,6 +349,17 @@ export function AppProvider({ children }) {
   const cartTotalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const cartSubtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+  // Helper to broadcast orders changes across all tabs/devices
+  const broadcastOrders = (updatedOrders, message = null, msgType = 'info') => {
+    try {
+      const bc = new BroadcastChannel('rab_razi_orders_feed');
+      bc.postMessage({ type: 'ORDERS_UPDATED', orders: updatedOrders, message, msgType });
+      bc.close();
+    } catch {
+      // ignore
+    }
+  };
+
   // Place order from Customer Panel
   const placeOrder = (orderData) => {
     const newOrderId = `RRR-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -352,10 +387,10 @@ export function AppProvider({ children }) {
       deliveryFee: orderData.deliveryFee,
       discount: orderData.discount || 0,
       total: orderData.total,
-      status: 'pending',
+      status: 'pending', // Order pending approval from admin/kitchen
       riderName: availableRider ? availableRider.name : 'Farhan Tariq (Rider #14)',
       riderPhone: availableRider ? availableRider.phone : '0312-9876543',
-      riderBike: availableRider ? availableRider.bike : 'Honda CG 125 (ICT-992)',
+      riderBike: availableRider ? availableRider.bike : 'Honda CG 125 (BDN-992)',
       estimatedMinutes: deliveryMode === 'delivery' ? 35 : 20,
       createdAt: now.toISOString(),
       statusTimestamps: {
@@ -363,11 +398,19 @@ export function AppProvider({ children }) {
       }
     };
 
-    setOrders((prev) => [newOrder, ...prev]);
+    setOrders((prev) => {
+      const updated = [newOrder, ...prev];
+      localStorage.setItem('rrr_orders', JSON.stringify(updated));
+      broadcastOrders(updated, `Naya Order #${newOrderId} receive hua! Pending approval.`, 'info');
+      return updated;
+    });
+
     setActiveOrderId(newOrderId);
     clearCart();
     setIsCartOpen(false);
-    setCurrentTab('tracking');
+
+    // 🎯 USER WAPIS APNY MENU PE AA JAYE
+    setCurrentTab('menu');
 
     // Confetti celebration
     try {
@@ -380,16 +423,16 @@ export function AppProvider({ children }) {
       // safe fallback
     }
 
-    showToast(`🎉 Order #${newOrderId} placed successfully!`, 'success');
+    showToast(`Order #${newOrderId} Confirmed! Status: Pending Approval ⏳`, 'success');
     return newOrderId;
   };
 
-  // Admin: Update order status
+  // Admin: Update order status (Approve to Preparing, Dispatch, etc.)
   const updateOrderStatus = (orderId, newStatus) => {
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    setOrders((prev) =>
-      prev.map((order) => {
+    setOrders((prev) => {
+      const updated = prev.map((order) => {
         if (order.id === orderId) {
           const updatedTimestamps = {
             ...order.statusTimestamps,
@@ -403,10 +446,28 @@ export function AppProvider({ children }) {
           };
         }
         return order;
-      })
-    );
+      });
 
-    showToast(`Order ${orderId} status changed to "${newStatus.replace('_', ' ').toUpperCase()}"`, 'info');
+      localStorage.setItem('rrr_orders', JSON.stringify(updated));
+
+      const customerBroadcastMsg =
+        newStatus === 'preparing'
+          ? `🍳 Order #${orderId} Approved! Kitchen me pakna shuru ho gaya hai (Preparing)`
+          : newStatus === 'on_the_way'
+          ? `🛵 Order #${orderId} Dispatched! Rider on the way.`
+          : newStatus === 'delivered'
+          ? `✓ Order #${orderId} Delivered!`
+          : null;
+
+      broadcastOrders(updated, customerBroadcastMsg, newStatus === 'preparing' ? 'success' : 'info');
+      return updated;
+    });
+
+    if (newStatus === 'preparing') {
+      showToast(`Order #${orderId} approved! User ko 'Preparing' show hoga 🍳`, 'success');
+    } else {
+      showToast(`Order ${orderId} status changed to "${newStatus.replace('_', ' ').toUpperCase()}"`, 'info');
+    }
   };
 
   // Admin: Assign specific Rider to Order

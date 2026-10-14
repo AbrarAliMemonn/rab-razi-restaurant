@@ -22,9 +22,10 @@ import {
   ChevronRight, 
   Sparkles,
   Wifi,
-  BatteryMedium,
   ShieldCheck,
-  Bike
+  Bike,
+  ChefHat,
+  X
 } from 'lucide-react';
 
 function MainLayout() {
@@ -44,8 +45,15 @@ function MainLayout() {
     settings,
     cartTotalCount,
     cartSubtotal,
-    setIsCartOpen
+    setIsCartOpen,
+    orders,
+    activeOrderId
   } = useApp();
+
+  // Active tracked order for Customer live banner
+  const [dismissedOrderId, setDismissedOrderId] = React.useState(null);
+  const activeOrder = orders.find((o) => o.id === activeOrderId) || orders.find((o) => o.status === 'pending' || o.status === 'preparing' || o.status === 'on_the_way');
+  const showOrderBanner = currentTab !== 'tracking' && activeOrder && activeOrder.id !== dismissedOrderId && (activeOrder.status === 'pending' || activeOrder.status === 'preparing' || activeOrder.status === 'on_the_way');
 
   // ==========================================================
   // 1. DEDICATED SEPARATE ADMIN PORTAL (#admin)
@@ -358,7 +366,90 @@ function MainLayout() {
       <Header />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-6 py-5 pb-28 md:pb-16">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-6 py-5 pb-28 md:pb-16 space-y-4">
+        {/* Real-Time Active Order Live Status Banner (Pending vs Preparing) */}
+        {showOrderBanner && (
+          <div className={`rounded-3xl p-4 sm:p-5 shadow-2xl border transition-all animate-in slide-in-from-top-3 duration-300 ${
+            activeOrder.status === 'pending'
+              ? 'bg-gradient-to-r from-amber-500/15 via-zinc-900 to-zinc-950 border-amber-500/40 text-amber-200'
+              : activeOrder.status === 'preparing'
+              ? 'bg-gradient-to-r from-orange-500/20 via-zinc-900 to-zinc-950 border-orange-500/50 text-orange-200 shadow-orange-950/20'
+              : 'bg-gradient-to-r from-emerald-500/15 via-zinc-900 to-zinc-950 border-emerald-500/40 text-emerald-200 shadow-emerald-950/20'
+          }`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start sm:items-center gap-3.5">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 shadow-lg ${
+                  activeOrder.status === 'pending'
+                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
+                    : activeOrder.status === 'preparing'
+                    ? 'bg-orange-500/20 text-orange-400 border border-orange-500/40 animate-bounce'
+                    : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                }`}>
+                  {activeOrder.status === 'pending' ? '⏳' : activeOrder.status === 'preparing' ? '🍳' : '🛵'}
+                </div>
+
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-black text-white font-mono bg-zinc-950/80 px-2 py-0.5 rounded-md border border-zinc-800">
+                      Order #{activeOrder.id}
+                    </span>
+                    
+                    <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase border flex items-center gap-1.5 ${
+                      activeOrder.status === 'pending'
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-400/40'
+                        : activeOrder.status === 'preparing'
+                        ? 'bg-orange-500/20 text-orange-300 border-orange-400/50'
+                        : 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
+                    }`}>
+                      {activeOrder.status === 'pending' && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />}
+                      {activeOrder.status === 'preparing' && <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-ping" />}
+                      {activeOrder.status === 'on_the_way' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
+                      <span>
+                        {activeOrder.status === 'pending'
+                          ? 'Order Confirmed (Pending Approval - منظوری کا انتظار)'
+                          : activeOrder.status === 'preparing'
+                          ? 'Approved! Cooking in Kitchen (کچن میں تیار ہو رہا ہے)'
+                          : 'Rider on the Road (رائیڈر روانہ ہے)'}
+                      </span>
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-zinc-300 mt-1 leading-relaxed">
+                    {activeOrder.status === 'pending'
+                      ? 'Aapka order Rab Razi Restaurant ko receive ho chuka hai. Admin ke approve karte hi kitchen me tayari shuru ho jayegi.'
+                      : activeOrder.status === 'preparing'
+                      ? 'Admin ne aapka order approve kar diya hai! Taaza masalay aur cuts karahi me pak rahay hain.'
+                      : 'Rider aapka garma garam khana le kar rawana ho chuka hai.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 self-end sm:self-center">
+                <button
+                  onClick={() => setCurrentTab('tracking')}
+                  className={`px-4 py-2 rounded-xl text-xs font-black shadow-md transition-all active:scale-95 whitespace-nowrap flex items-center justify-center gap-1.5 cursor-pointer ${
+                    activeOrder.status === 'pending'
+                      ? 'bg-amber-500 hover:bg-amber-400 text-zinc-950'
+                      : activeOrder.status === 'preparing'
+                      ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-zinc-950 shadow-orange-950/40'
+                      : 'bg-emerald-500 hover:bg-emerald-400 text-zinc-950'
+                  }`}
+                >
+                  <span>{activeOrder.status === 'on_the_way' ? 'Watch Live GPS Map 📍' : 'Track Order ↗'}</span>
+                </button>
+
+                <button
+                  onClick={() => setDismissedOrderId(activeOrder.id)}
+                  className="p-1.5 rounded-xl bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all cursor-pointer"
+                  title="Banner band karein"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {renderContent()}
       </main>
 
