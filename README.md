@@ -3,6 +3,10 @@
 > **Taste of Blessing & Royal Hospitality**  
 > Modern, mobile-first responsive Food Ordering, Kitchen Management & Live Foodpanda-Style Rider GPS Tracking Web Application.
 
+🌐 **Live Website:** [https://rab-razi-restaurant.vercel.app](https://rab-razi-restaurant.vercel.app)  
+🛡️ **Admin Portal:** [https://rab-razi-restaurant.vercel.app/#admin](https://rab-razi-restaurant.vercel.app/#admin)  
+🛵 **Rider GPS App:** [https://rab-razi-restaurant.vercel.app/#rider](https://rab-razi-restaurant.vercel.app/#rider)
+
 ---
 
 ## 📍 Restaurant Location
