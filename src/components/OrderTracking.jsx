@@ -19,7 +19,10 @@ import {
   Compass,
   Play,
   Square,
-  ExternalLink
+  ExternalLink,
+  Flame,
+  AlertCircle,
+  UtensilsCrossed
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -29,6 +32,7 @@ export default function OrderTracking() {
     activeOrderId, 
     setActiveOrderId, 
     setCurrentTab, 
+    settings,
     updateOrderStatus,
     riderLiveLocation,
     setRiderLiveLocation,
@@ -40,18 +44,36 @@ export default function OrderTracking() {
   const [isTestMoving, setIsTestMoving] = useState(false);
   const testTimerRef = useRef(null);
 
+  // Safe settings fallback to prevent any undefined runtime crashes
+  const safeSettings = settings || {
+    restaurantName: 'Rab Razi Restaurant',
+    address: 'Main Badin-Mirpurkhas Road, Tando Bago, Sindh',
+    plusCode: 'QXQ6+C96',
+    googleMapsUrl: 'https://maps.app.goo.gl/j9TWCvYC6UaRACuf8',
+    phone: '0300-1234567'
+  };
+
   // Find active order or fallback to first order
   const currentOrder = orders.find((o) => o.id === activeOrderId) || orders[0];
 
   const handleSearchOrder = (e) => {
     e.preventDefault();
-    const cleanId = lookupId.trim().toUpperCase();
-    const found = orders.find((o) => o.id.toUpperCase() === cleanId);
+    if (!lookupId.trim()) {
+      showToast('Please enter an Order ID', 'warning');
+      return;
+    }
+    const cleanId = lookupId.trim().toUpperCase().replace('#', '');
+    const found = orders.find((o) => {
+      const oid = o.id.toUpperCase();
+      return oid === cleanId || oid === `RRR-${cleanId}` || oid.replace('RRR-', '') === cleanId;
+    });
+
     if (found) {
       setActiveOrderId(found.id);
-      showToast(`Showing Order #${found.id}`);
+      showToast(`Showing Order #${found.id}`, 'success');
+      setLookupId('');
     } else {
-      showToast('Order not found. Please check Order ID', 'warning');
+      showToast(`Order #${cleanId} not found. Check order list below`, 'warning');
     }
   };
 
@@ -66,13 +88,13 @@ export default function OrderTracking() {
     {
       key: 'preparing',
       title: 'Approved & Cooking in Kitchen',
-      description: 'Admin approved your order! Fresh spices & cuts simmering on the stove',
+      description: 'Admin approved! Fresh spices & cuts simmering on the stove',
       icon: ChefHat
     },
     {
       key: 'on_the_way',
       title: 'Out for Delivery (On Bike)',
-      description: 'Rider is on bike heading to your house with hot food',
+      description: 'Rider is on bike heading to your house with piping hot food',
       icon: Bike
     },
     {
@@ -150,12 +172,14 @@ export default function OrderTracking() {
   }, []);
 
   // Compute animated coordinates on simulated map SVG
+  const isRiderOnRoad = currentOrder?.status === 'on_the_way' || isTestMoving;
+
   const progressPercent = currentOrder?.status === 'delivered'
     ? 96
-    : currentOrder?.status === 'on_the_way'
+    : isRiderOnRoad
     ? (riderLiveLocation?.progress || 48)
     : currentOrder?.status === 'preparing'
-    ? 22
+    ? 18
     : 8;
 
   const riderLeftStyle = `${progressPercent}%`;
@@ -194,7 +218,7 @@ export default function OrderTracking() {
             </div>
             <button
               type="submit"
-              className="bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-zinc-700 font-bold px-3 py-2 rounded-xl text-xs transition-all active:scale-95"
+              className="bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-zinc-700 font-bold px-3 py-2 rounded-xl text-xs transition-all active:scale-95 cursor-pointer"
             >
               Search
             </button>
@@ -217,15 +241,15 @@ export default function OrderTracking() {
                     ? 'text-amber-400'
                     : ord.status === 'preparing'
                     ? 'text-orange-400'
-                    : 'text-zinc-400';
+                    : 'text-yellow-400';
 
                 return (
                   <button
                     key={ord.id}
                     onClick={() => setActiveOrderId(ord.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-2 ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-2 cursor-pointer ${
                       isSelected
-                        ? 'bg-amber-500/20 border-amber-500/80 text-amber-400 shadow-md ring-1 ring-amber-500/30'
+                        ? 'bg-amber-500/20 border-amber-500/80 text-amber-400 shadow-md ring-1 ring-amber-500/30 font-bold'
                         : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'
                     }`}
                   >
@@ -244,13 +268,13 @@ export default function OrderTracking() {
       {!currentOrder ? (
         <div className="text-center py-16 bg-zinc-900/50 rounded-3xl border border-zinc-800 space-y-3">
           <div className="text-4xl">🛵</div>
-          <h3 className="text-lg font-bold text-zinc-200">No active orders yet</h3>
+          <h3 className="text-lg font-bold text-zinc-200">No active orders found</h3>
           <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-            Place an order from our mouth-watering menu to watch live live tracking in real time!
+            Place an order from our mouth-watering menu to watch live tracking in real time!
           </p>
           <button
             onClick={() => setCurrentTab('menu')}
-            className="mt-3 px-5 py-2.5 bg-amber-500 text-zinc-950 text-xs font-black rounded-xl hover:bg-amber-400 shadow-md"
+            className="mt-3 px-5 py-2.5 bg-amber-500 text-zinc-950 text-xs font-black rounded-xl hover:bg-amber-400 shadow-md cursor-pointer transition-all active:scale-95"
           >
             Explore Menu & Deals
           </button>
@@ -271,7 +295,7 @@ export default function OrderTracking() {
                     #{currentOrder.id}
                   </span>
                   <span className="bg-zinc-800 text-zinc-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    {currentOrder.deliveryType}
+                    {currentOrder.deliveryType || 'Delivery'}
                   </span>
                 </div>
                 <p className="text-xs text-zinc-400 mt-1">
@@ -284,14 +308,14 @@ export default function OrderTracking() {
                 <Clock className="w-5 h-5 text-amber-400 animate-pulse flex-shrink-0" />
                 <div>
                   <span className="text-[10px] text-zinc-400 block font-semibold uppercase tracking-wider flex items-center gap-1">
-                    <span>Estimated Arrival</span>
+                    <span>Estimated Status</span>
                     {currentOrder.status === 'on_the_way' && (
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                     )}
                   </span>
                   <span className="text-sm font-black text-white">
                     {currentOrder.status === 'delivered'
-                      ? 'Delivered with Love'
+                      ? 'Delivered with Love 🎉'
                       : currentOrder.status === 'on_the_way'
                       ? `${riderLiveLocation?.distanceRemaining || '1.1 km'} away (~${riderLiveLocation?.etaMinutes || 4} mins)`
                       : currentOrder.status === 'preparing'
@@ -360,14 +384,14 @@ export default function OrderTracking() {
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
                 </span>
                 <span className="font-medium">
-                  Current Status: <strong className="text-white capitalize">{currentOrder.status.replace('_', ' ')}</strong>
+                  Current Pipeline Status: <strong className="text-white capitalize">{currentOrder.status.replace('_', ' ')}</strong>
                 </span>
               </div>
 
               {/* Demo Stepper button */}
               <button
                 onClick={simulateNext}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-amber-400 border border-zinc-700 transition-all active:scale-95 text-[11px] font-bold"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-amber-400 border border-zinc-700 transition-all active:scale-95 text-[11px] font-bold cursor-pointer"
                 title="Advance order status to test live pipeline transition"
               >
                 <RotateCcw className="w-3 h-3" />
@@ -386,20 +410,46 @@ export default function OrderTracking() {
                 <Navigation className="w-4 h-4 text-amber-400" />
                 <div>
                   <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-2">
-                    <span>Live Rider GPS Route Tracking</span>
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    <span>
+                      {currentOrder.status === 'pending'
+                        ? 'Restaurant Kitchen Queue • Awaiting Admin'
+                        : currentOrder.status === 'preparing'
+                        ? 'Kitchen Cooking in Progress • Wok Sizzling'
+                        : currentOrder.status === 'delivered'
+                        ? 'Delivery Completed • Doorstep'
+                        : 'Live Rider GPS Route Tracking'}
+                    </span>
+                    {isRiderOnRoad && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />}
                   </h3>
                   <p className="text-[10px] text-zinc-400">
-                    Real-time coordinates updated live from rider's device
+                    {currentOrder.status === 'pending'
+                      ? 'Order confirmed. Awaiting restaurant admin approval to start cooking'
+                      : currentOrder.status === 'preparing'
+                      ? 'Fresh handi & karahi cooking with authentic desi ghee'
+                      : currentOrder.status === 'delivered'
+                      ? 'Delivered to customer destination in Tando Bago'
+                      : "Real-time coordinates updated live from rider's device"}
                   </p>
                 </div>
               </div>
 
               {/* Live telemetry badges */}
               <div className="flex items-center gap-2">
-                <span className="text-[11px] bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-xl font-bold border border-emerald-500/30 flex items-center gap-1 font-mono">
-                  <Radio className="w-3 h-3 text-emerald-400 animate-spin" />
-                  <span>GPS Connected</span>
+                <span className={`text-[11px] px-2.5 py-1 rounded-xl font-bold border flex items-center gap-1 font-mono ${
+                  isRiderOnRoad
+                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                    : currentOrder.status === 'preparing'
+                    ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                    : 'bg-zinc-800 text-amber-400 border-zinc-700'
+                }`}>
+                  <Radio className={`w-3 h-3 ${isRiderOnRoad ? 'text-emerald-400 animate-spin' : 'text-amber-400'}`} />
+                  <span>
+                    {isRiderOnRoad 
+                      ? 'GPS Active' 
+                      : currentOrder.status === 'preparing'
+                      ? 'Kitchen Active'
+                      : 'Order Queued'}
+                  </span>
                 </span>
 
                 {/* Test Drive Button on customer map */}
@@ -431,6 +481,21 @@ export default function OrderTracking() {
                 <div className="absolute left-3/4 top-0 bottom-0 w-px bg-zinc-600" />
               </div>
 
+              {/* Status Banner Overlay when in Kitchen / Pending */}
+              {currentOrder.status === 'pending' && !isTestMoving && (
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-zinc-950/90 border border-amber-500/50 backdrop-blur-md px-3.5 py-1.5 rounded-2xl shadow-xl flex items-center gap-2 text-xs text-amber-300 pointer-events-none">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  <span className="font-bold">Order Received • Waiting for Admin Approval ⏳</span>
+                </div>
+              )}
+
+              {currentOrder.status === 'preparing' && !isTestMoving && (
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-zinc-950/90 border border-orange-500/50 backdrop-blur-md px-3.5 py-1.5 rounded-2xl shadow-xl flex items-center gap-2 text-xs text-orange-300 pointer-events-none">
+                  <span className="w-2 h-2 rounded-full bg-orange-400 animate-ping" />
+                  <span className="font-bold">Admin Approved! Taaza Cooking in Kitchen 🍳</span>
+                </div>
+              )}
+
               {/* Route Road Canvas SVG */}
               <svg className="absolute inset-0 w-full h-full pointer-events-none">
                 {/* Background road */}
@@ -445,20 +510,24 @@ export default function OrderTracking() {
                 <path
                   d="M 60,180 Q 250,50 480,130 T 780,70"
                   fill="none"
-                  stroke="#f59e0b"
+                  stroke={isRiderOnRoad ? "#f59e0b" : "#3f3f46"}
                   strokeWidth="4"
-                  strokeDasharray="8 6"
-                  className="animate-pulse"
+                  strokeDasharray={isRiderOnRoad ? "8 6" : "none"}
+                  className={isRiderOnRoad ? "animate-pulse" : ""}
                 />
               </svg>
 
               {/* Pin 1: Restaurant Starting Point */}
               <div className="absolute left-6 sm:left-12 bottom-8 flex flex-col items-center z-10">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-600 to-red-600 border-2 border-white text-white flex items-center justify-center shadow-2xl text-xl">
-                  🍗
+                <div className={`w-12 h-12 rounded-2xl border-2 border-white text-white flex items-center justify-center shadow-2xl text-xl ${
+                  currentOrder.status === 'preparing'
+                    ? 'bg-gradient-to-tr from-orange-600 to-amber-600 animate-bounce ring-4 ring-orange-500/40'
+                    : 'bg-gradient-to-tr from-amber-600 to-red-600'
+                }`}>
+                  {currentOrder.status === 'preparing' ? '🍳' : '🍗'}
                 </div>
                 <a
-                  href={settings.googleMapsUrl || 'https://maps.app.goo.gl/j9TWCvYC6UaRACuf8'}
+                  href={safeSettings.googleMapsUrl || 'https://maps.app.goo.gl/j9TWCvYC6UaRACuf8'}
                   target="_blank"
                   rel="noreferrer"
                   title="Google Maps par Rab Razi Restaurant Tando Bago dekhein"
@@ -478,24 +547,36 @@ export default function OrderTracking() {
               >
                 {/* Pulse radar around bike */}
                 <div className="relative">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-950 flex items-center justify-center shadow-2xl ring-4 ring-amber-400/40">
+                  <div className={`w-12 h-12 rounded-full text-zinc-950 flex items-center justify-center shadow-2xl ring-4 ${
+                    isRiderOnRoad
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 ring-amber-400/40'
+                      : currentOrder.status === 'preparing'
+                      ? 'bg-gradient-to-r from-orange-500 to-amber-500 ring-orange-400/40'
+                      : 'bg-zinc-800 text-amber-400 ring-zinc-700'
+                  }`}>
                     <Bike className="w-6 h-6 stroke-[2.5]" />
                   </div>
-                  <div className="absolute inset-0 rounded-full bg-amber-400 animate-ping opacity-60" />
+                  {isRiderOnRoad && (
+                    <div className="absolute inset-0 rounded-full bg-amber-400 animate-ping opacity-60" />
+                  )}
                 </div>
 
                 {/* Floating telemetry tag above rider */}
                 <div className="mt-1.5 bg-zinc-950/95 border border-amber-500/80 px-2 py-0.5 rounded-lg text-[10px] font-black text-amber-400 shadow-xl flex items-center gap-1 whitespace-nowrap">
                   <span>{currentOrder.riderName?.split(' ')[0] || 'Rider'}</span>
                   <span>•</span>
-                  <span>{riderLiveLocation?.speed || 32} km/h</span>
+                  <span>{isRiderOnRoad ? `${riderLiveLocation?.speed || 32} km/h` : currentOrder.status === 'preparing' ? 'At Kitchen' : 'Standby'}</span>
                 </div>
               </div>
 
               {/* Pin 2: Customer Destination Point */}
               <div className="absolute right-6 sm:right-12 top-6 flex flex-col items-center z-10">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-600 border-2 border-white text-white flex items-center justify-center shadow-2xl text-xl">
-                  🏠
+                <div className={`w-12 h-12 rounded-2xl border-2 border-white text-white flex items-center justify-center shadow-2xl text-xl ${
+                  currentOrder.status === 'delivered'
+                    ? 'bg-emerald-500 ring-4 ring-emerald-400/40 animate-pulse'
+                    : 'bg-emerald-600'
+                }`}>
+                  {currentOrder.status === 'delivered' ? '🎉' : '🏠'}
                 </div>
                 <div className="mt-1.5 bg-zinc-950/95 border border-zinc-700 px-2.5 py-0.5 rounded-lg text-[10px] font-black text-emerald-400 shadow-lg truncate max-w-[120px]">
                   {currentOrder.customerName || 'Your Destination'}
@@ -507,34 +588,78 @@ export default function OrderTracking() {
             <div className="p-4 bg-zinc-950 border-t border-zinc-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xl font-black text-amber-400">
-                  🛵
+                  {currentOrder.status === 'pending'
+                    ? '⏳'
+                    : currentOrder.status === 'preparing'
+                    ? '🍳'
+                    : currentOrder.status === 'delivered'
+                    ? '✅'
+                    : '🛵'}
                 </div>
                 <div>
                   <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                    <span>{currentOrder.riderName || 'Farhan Tariq (Rider #14)'}</span>
-                    <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.2 rounded-full font-bold">
-                      Live On Road
+                    <span>
+                      {currentOrder.status === 'pending'
+                        ? 'Awaiting Admin Confirmation'
+                        : currentOrder.status === 'preparing'
+                        ? 'Chef at Rab Razi Kitchen'
+                        : currentOrder.status === 'delivered'
+                        ? 'Order Delivered'
+                        : (currentOrder.riderName || 'Farhan Tariq (Rider #14)')}
+                    </span>
+                    <span className={`text-[10px] px-2 py-0.2 rounded-full font-bold ${
+                      isRiderOnRoad
+                        ? 'bg-emerald-500/20 text-emerald-400'
+                        : currentOrder.status === 'preparing'
+                        ? 'bg-orange-500/20 text-orange-400'
+                        : currentOrder.status === 'delivered'
+                        ? 'bg-emerald-500/20 text-emerald-400'
+                        : 'bg-amber-500/20 text-amber-400'
+                    }`}>
+                      {isRiderOnRoad
+                        ? 'Live On Road'
+                        : currentOrder.status === 'preparing'
+                        ? 'Cooking Now'
+                        : currentOrder.status === 'delivered'
+                        ? 'Completed'
+                        : 'In Queue'}
                     </span>
                   </h4>
                   <p className="text-[11px] text-zinc-400">
-                    Vehicle: {currentOrder.riderBike || 'Honda CG 125 (BDN-992)'}
+                    {currentOrder.status === 'pending'
+                      ? 'Admin will review and approve order to begin cooking.'
+                      : currentOrder.status === 'preparing'
+                      ? `Authentic spices simmering. Rider ${currentOrder.riderName || 'assigned'} ready for pickup.`
+                      : currentOrder.status === 'delivered'
+                      ? 'Enjoy your piping hot meal! Thank you for ordering.'
+                      : `Vehicle: ${currentOrder.riderBike || 'Honda CG 125 (BDN-992)'}`}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <a
-                  href={`tel:${currentOrder.riderPhone || '0312-9876543'}`}
-                  className="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md"
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                  <span>Call Rider</span>
-                </a>
+                {currentOrder.status === 'on_the_way' ? (
+                  <a
+                    href={`tel:${currentOrder.riderPhone || '0312-9876543'}`}
+                    className="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>Call Rider</span>
+                  </a>
+                ) : (
+                  <a
+                    href={`tel:${safeSettings.phone || '0300-1234567'}`}
+                    className="flex-1 sm:flex-none px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-zinc-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>Call Restaurant</span>
+                  </a>
+                )}
 
                 {/* Open Dedicated Rider App link */}
                 <button
                   onClick={switchToRider}
-                  className="flex-1 sm:flex-none px-3.5 py-2 bg-zinc-800 hover:bg-zinc-700 text-amber-400 rounded-xl text-xs font-bold border border-zinc-700 flex items-center justify-center gap-1.5 transition-all active:scale-95"
+                  className="flex-1 sm:flex-none px-3.5 py-2 bg-zinc-800 hover:bg-zinc-700 text-amber-400 rounded-xl text-xs font-bold border border-zinc-700 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
                   title="Open Rider App GPS view (#rider)"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -552,19 +677,19 @@ export default function OrderTracking() {
               </div>
               <div>
                 <h4 className="text-xs font-black text-white flex items-center gap-1.5">
-                  <span>{settings.restaurantName} (Tando Bago Branch)</span>
+                  <span>{safeSettings.restaurantName || 'Rab Razi Restaurant'} (Tando Bago Branch)</span>
                   <span className="text-[10px] bg-zinc-800 text-amber-400 px-2 py-0.5 rounded-full font-mono">
-                    Plus Code: {settings.plusCode || 'QXQ6+C96'}
+                    Plus Code: {safeSettings.plusCode || 'QXQ6+C96'}
                   </span>
                 </h4>
                 <p className="text-[11px] text-zinc-400 mt-0.5">
-                  {settings.address}
+                  {safeSettings.address || 'Main Badin-Mirpurkhas Road, Tando Bago, Sindh'}
                 </p>
               </div>
             </div>
 
             <a
-              href={settings.googleMapsUrl || 'https://maps.app.goo.gl/j9TWCvYC6UaRACuf8'}
+              href={safeSettings.googleMapsUrl || 'https://maps.app.goo.gl/j9TWCvYC6UaRACuf8'}
               target="_blank"
               rel="noreferrer"
               className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 text-xs font-black shadow-md transition-all active:scale-95 whitespace-nowrap"
@@ -584,7 +709,7 @@ export default function OrderTracking() {
                 </h3>
               </div>
               <span className="text-xs text-zinc-400 font-mono">
-                Payment: {currentOrder.paymentMethod}
+                Payment: {currentOrder.paymentMethod || 'Cash on Delivery'}
               </span>
             </div>
 
@@ -592,8 +717,10 @@ export default function OrderTracking() {
             <div className="bg-zinc-950 p-3.5 rounded-2xl border border-zinc-800/80 flex items-start gap-2.5 text-xs text-zinc-300">
               <MapPin className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
               <div>
-                <strong className="text-white block font-semibold">{currentOrder.customerName} ({currentOrder.customerPhone})</strong>
-                <span className="text-zinc-400">{currentOrder.customerAddress}</span>
+                <strong className="text-white block font-semibold">
+                  {currentOrder.customerName || 'Valued Guest'} ({currentOrder.customerPhone || 'N/A'})
+                </strong>
+                <span className="text-zinc-400">{currentOrder.customerAddress || 'Tando Bago, Sindh'}</span>
                 {currentOrder.notes && (
                   <p className="text-[11px] text-amber-300/80 italic mt-0.5">
                     Note: "{currentOrder.notes}"
@@ -604,7 +731,7 @@ export default function OrderTracking() {
 
             {/* Items Table */}
             <div className="space-y-2 pt-1">
-              {currentOrder.items.map((item, idx) => (
+              {(currentOrder.items || []).map((item, idx) => (
                 <div
                   key={idx}
                   className="flex items-center justify-between text-xs py-1.5 border-b border-zinc-800/50"
@@ -621,7 +748,7 @@ export default function OrderTracking() {
                     )}
                   </div>
                   <span className="font-bold text-zinc-200">
-                    Rs. {(item.price * item.quantity).toLocaleString()}
+                    Rs. {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
                   </span>
                 </div>
               ))}
@@ -631,12 +758,12 @@ export default function OrderTracking() {
             <div className="space-y-1.5 pt-2 text-xs border-t border-zinc-800 text-zinc-400">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span className="text-zinc-200">Rs. {currentOrder.subtotal?.toLocaleString()}</span>
+                <span className="text-zinc-200">Rs. {currentOrder.subtotal?.toLocaleString() || '0'}</span>
               </div>
               <div className="flex justify-between">
                 <span>Delivery Charge</span>
                 <span className="text-zinc-200">
-                  {currentOrder.deliveryFee === 0 ? 'FREE' : `Rs. ${currentOrder.deliveryFee}`}
+                  {currentOrder.deliveryFee === 0 ? 'FREE' : `Rs. ${currentOrder.deliveryFee || 0}`}
                 </span>
               </div>
               {currentOrder.discount > 0 && (
@@ -647,14 +774,14 @@ export default function OrderTracking() {
               )}
               <div className="flex justify-between text-sm font-black text-white pt-2 border-t border-zinc-800">
                 <span>Grand Total</span>
-                <span className="text-amber-400 text-base">Rs. {currentOrder.total?.toLocaleString()}</span>
+                <span className="text-amber-400 text-base">Rs. {currentOrder.total?.toLocaleString() || '0'}</span>
               </div>
             </div>
 
             <div className="pt-2 flex justify-end">
               <button
                 onClick={() => setCurrentTab('menu')}
-                className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1.5"
+                className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1.5 cursor-pointer"
               >
                 <span>Order More Delicious Dishes</span>
                 <ArrowRight className="w-3.5 h-3.5" />
