@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { INITIAL_MENU_ITEMS, INITIAL_ORDERS, INITIAL_SETTINGS, INITIAL_RIDERS } from '../data/mockData';
+import { authApi, ordersApi } from '../services/api';
 
 const AppContext = createContext();
 
@@ -226,13 +227,17 @@ export function AppProvider({ children }) {
   };
 
   const loginAdmin = (username, password) => {
-    if ((username === 'admin' && password === 'admin123') || (username === 'admin' && password === '')) {
+    const cleanUser = username?.trim().toLowerCase();
+    if (
+      (cleanUser === 'abraralimemon23@gmail.com' && (password === 'admin123' || password === '')) ||
+      (cleanUser === 'admin' && password === 'admin123')
+    ) {
       setIsAdminAuthenticated(true);
       localStorage.setItem('rrr_admin_auth', 'true');
-      showToast('Admin login successful! Welcome Manager.', 'success');
+      showToast('Admin login successful! Welcome Abrar Ali Memon.', 'success');
       return true;
     }
-    showToast('Invalid admin credentials. Use admin / admin123', 'warning');
+    showToast('Invalid admin credentials. Use abraralimemon23@gmail.com', 'warning');
     return false;
   };
 
@@ -251,6 +256,187 @@ export function AppProvider({ children }) {
   const [isMobileFrameMode, setIsMobileFrameMode] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedItemForModal, setSelectedItemForModal] = useState(null);
+
+  // Foodpanda-style User Authentication state
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('rrr_current_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [authToken, setAuthToken] = useState(() => {
+    return localStorage.getItem('rrr_auth_token') || null;
+  });
+
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState('login'); // 'login' | 'register'
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  // Auto-sync user address to userLocation if available
+  useEffect(() => {
+    if (currentUser?.addresses?.length > 0) {
+      const def = currentUser.addresses.find((a) => a.isDefault) || currentUser.addresses[0];
+      if (def?.address) {
+        setUserLocation(def.address);
+      }
+    }
+  }, [currentUser]);
+
+  // Auto-verify token with backend on mount
+  useEffect(() => {
+    if (authToken) {
+      authApi.getMe().then((res) => {
+        if (res.ok && res.data?.user) {
+          setCurrentUser(res.data.user);
+          localStorage.setItem('rrr_current_user', JSON.stringify(res.data.user));
+        }
+      });
+    }
+  }, [authToken]);
+
+  const loginUser = async (identifier, password) => {
+    const res = await authApi.login(identifier, password);
+    if (res.ok && res.data?.success) {
+      const { user, token } = res.data;
+      setCurrentUser(user);
+      setAuthToken(token);
+      localStorage.setItem('rrr_current_user', JSON.stringify(user));
+      localStorage.setItem('rrr_auth_token', token);
+      setIsAuthModalOpen(false);
+      showToast(`Welcome back, ${user.name}! 👋`, 'success');
+      return { success: true, user };
+    }
+
+    // Offline / LocalStorage fallback
+    if (res.isOffline) {
+      const localUsers = JSON.parse(localStorage.getItem('rrr_local_users') || '[]');
+      const cleanId = identifier.trim().toLowerCase();
+
+      // Dedicated Admin account: abraralimemon23@gmail.com
+      if (cleanId === 'abraralimemon23@gmail.com') {
+        const storedAdmin = localUsers.find((u) => u.email?.toLowerCase() === 'abraralimemon23@gmail.com');
+        const adminPass = storedAdmin ? storedAdmin.password : 'admin123';
+        if (password === adminPass) {
+          const adminUser = {
+            id: 'usr-admin-abrar',
+            name: storedAdmin?.name || 'Abrar Ali Memon',
+            email: 'abraralimemon23@gmail.com',
+            phone: storedAdmin?.phone || '0300-1234567',
+            role: 'admin',
+            addresses: [
+              { id: 'addr-admin-1', label: 'Restaurant Headquarters', address: 'Main Badin-Mirpurkhas Road, Tando Bago, Sindh', isDefault: true }
+            ]
+          };
+          setCurrentUser(adminUser);
+          setAuthToken('jwt_token_admin_abrar');
+          localStorage.setItem('rrr_current_user', JSON.stringify(adminUser));
+          localStorage.setItem('rrr_auth_token', 'jwt_token_admin_abrar');
+          setIsAuthModalOpen(false);
+          showToast('Welcome Abrar Ali Memon! Admin access enabled 👑', 'success');
+          return { success: true, user: adminUser };
+        }
+      }
+
+      const found = localUsers.find(
+        (u) => (u.email?.toLowerCase() === cleanId || u.phone === identifier.trim()) && u.password === password
+      );
+
+      if (found) {
+        const { password: _, ...safeUser } = found;
+        setCurrentUser(safeUser);
+        setAuthToken(`mock_token_${safeUser.id}`);
+        localStorage.setItem('rrr_current_user', JSON.stringify(safeUser));
+        localStorage.setItem('rrr_auth_token', `mock_token_${safeUser.id}`);
+        setIsAuthModalOpen(false);
+        showToast(`Welcome back, ${safeUser.name}!`, 'success');
+        return { success: true, user: safeUser };
+      }
+
+      return { success: false, message: 'Invalid email/phone or password.' };
+    }
+
+    return { success: false, message: res.data?.message || 'Login failed.' };
+  };
+
+  const registerUser = async (userData) => {
+    const res = await authApi.register(userData);
+    if (res.ok && res.data?.success) {
+      const { user, token } = res.data;
+      setCurrentUser(user);
+      setAuthToken(token);
+      localStorage.setItem('rrr_current_user', JSON.stringify(user));
+      localStorage.setItem('rrr_auth_token', token);
+      setIsAuthModalOpen(false);
+      showToast(user.role === 'admin' ? `Welcome Admin Abrar Ali Memon! 👑` : `Welcome to Rab Razi Restaurant, ${user.name}! 🎉`, 'success');
+      return { success: true, user };
+    }
+
+    // Offline / LocalStorage fallback
+    if (res.isOffline) {
+      const localUsers = JSON.parse(localStorage.getItem('rrr_local_users') || '[]');
+      const newUserId = `usr-${Date.now().toString().slice(-6)}`;
+      const cleanEmail = userData.email ? userData.email.trim().toLowerCase() : '';
+      const isAdmin = cleanEmail === 'abraralimemon23@gmail.com';
+      const role = isAdmin ? 'admin' : 'customer';
+
+      const newUser = {
+        id: newUserId,
+        name: userData.name.trim(),
+        email: cleanEmail,
+        phone: userData.phone ? userData.phone.trim() : '',
+        password: userData.password,
+        role,
+        addresses: userData.address ? [
+          { id: `addr-${Date.now()}`, label: 'Home', address: userData.address.trim(), isDefault: true }
+        ] : []
+      };
+
+      localUsers.push(newUser);
+      localStorage.setItem('rrr_local_users', JSON.stringify(localUsers));
+
+      const { password: _, ...safeUser } = newUser;
+      setCurrentUser(safeUser);
+      setAuthToken(`mock_token_${safeUser.id}`);
+      localStorage.setItem('rrr_current_user', JSON.stringify(safeUser));
+      localStorage.setItem('rrr_auth_token', `mock_token_${safeUser.id}`);
+      setIsAuthModalOpen(false);
+      showToast(isAdmin ? 'Welcome Abrar Ali Memon! Admin account created 👑' : `Account created successfully! Welcome ${safeUser.name}!`, 'success');
+      return { success: true, user: safeUser };
+    }
+
+    return { success: false, message: res.data?.message || 'Registration failed.' };
+  };
+
+  const logoutUser = () => {
+    setCurrentUser(null);
+    setAuthToken(null);
+    localStorage.removeItem('rrr_current_user');
+    localStorage.removeItem('rrr_auth_token');
+    setIsProfileModalOpen(false);
+    showToast('Logged out safely', 'info');
+  };
+
+  const addUserAddress = async (addressData) => {
+    if (!currentUser) return;
+
+    const newAddr = {
+      id: `addr-${Date.now()}`,
+      label: addressData.label || 'Delivery Address',
+      address: addressData.address,
+      isDefault: addressData.isDefault || false
+    };
+
+    const updatedAddresses = [...(currentUser.addresses || []), newAddr];
+    const updatedUser = { ...currentUser, addresses: updatedAddresses };
+    setCurrentUser(updatedUser);
+    localStorage.setItem('rrr_current_user', JSON.stringify(updatedUser));
+
+    // Try backend update
+    authApi.addAddress(addressData);
+  };
 
   // Floating toast notification
   const [toast, setToast] = useState(null);
@@ -369,8 +555,9 @@ export function AppProvider({ children }) {
 
     const newOrder = {
       id: newOrderId,
-      customerName: orderData.customerName || 'Valued Guest',
-      customerPhone: orderData.customerPhone || '0300-0000000',
+      userId: currentUser ? currentUser.id : null,
+      customerName: orderData.customerName || (currentUser ? currentUser.name : 'Valued Guest'),
+      customerPhone: orderData.customerPhone || (currentUser ? currentUser.phone : '0300-0000000'),
       customerAddress: orderData.customerAddress || userLocation,
       deliveryType: deliveryMode === 'delivery' ? 'Delivery' : deliveryMode === 'pickup' ? 'Takeaway' : 'Dine In',
       paymentMethod: orderData.paymentMethod || 'Cash on Delivery',
@@ -411,6 +598,13 @@ export function AppProvider({ children }) {
 
     // 🎯 USER WAPIS APNY MENU PE AA JAYE
     setCurrentTab('menu');
+
+    // Sync order with backend
+    try {
+      ordersApi.create(newOrder);
+    } catch {
+      // safe fallback
+    }
 
     // Confetti celebration
     try {
@@ -618,6 +812,19 @@ export function AppProvider({ children }) {
         toggleRiderStatus,
         assignRiderToOrder,
         settings,
+        currentUser,
+        setCurrentUser,
+        authToken,
+        isAuthModalOpen,
+        setIsAuthModalOpen,
+        authModalTab,
+        setAuthModalTab,
+        isProfileModalOpen,
+        setIsProfileModalOpen,
+        loginUser,
+        registerUser,
+        logoutUser,
+        addUserAddress,
         cart,
         activeOrderId,
         setActiveOrderId,

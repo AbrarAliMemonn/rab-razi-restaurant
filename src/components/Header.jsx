@@ -6,7 +6,8 @@ import {
   Smartphone, 
   Monitor, 
   Clock, 
-  Sparkles
+  Sparkles,
+  User
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -23,7 +24,11 @@ export default function Header() {
     setSearchQuery,
     isMobileFrameMode,
     setIsMobileFrameMode,
-    setCurrentTab
+    setCurrentTab,
+    currentUser,
+    setIsAuthModalOpen,
+    setAuthModalTab,
+    setIsProfileModalOpen
   } = useApp();
 
   return (
@@ -144,6 +149,29 @@ export default function Header() {
                 </>
               )}
             </button>
+
+            {/* Foodpanda-style User Account Button / Profile Chip */}
+            {currentUser ? (
+              <button
+                onClick={() => setIsProfileModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold bg-zinc-900 border border-amber-500/40 text-amber-300 hover:border-amber-400 transition-all shadow-sm active:scale-95 cursor-pointer"
+                title="View My Account & Saved Addresses"
+              >
+                <div className="w-5 h-5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-950 font-black text-[10px] flex items-center justify-center">
+                  {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : '👤'}
+                </div>
+                <span className="hidden xs:inline truncate max-w-[85px]">{currentUser.name.split(' ')[0]}</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => { setAuthModalTab('login'); setIsAuthModalOpen(true); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-amber-400 border border-zinc-800 hover:border-amber-500/40 transition-all shadow-sm active:scale-95 cursor-pointer"
+                title="Log In or Create Foodpanda-style Account"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span className="hidden xs:inline">Sign In</span>
+              </button>
+            )}
 
             {/* Cart Button with Live Counter Badge */}
             <button

@@ -12,6 +12,8 @@ import AdminPanel from './components/AdminPanel';
 import RiderPortal from './components/RiderPortal';
 import DealsSection from './components/DealsSection';
 import NotificationToast from './components/NotificationToast';
+import AuthModal from './components/AuthModal';
+import UserProfileModal from './components/UserProfileModal';
 import { 
   Flame, 
   UtensilsCrossed, 
@@ -527,6 +529,8 @@ function MainLayout() {
       {/* Global Modals & Notifications */}
       <ItemDetailModal />
       <CartDrawer />
+      <AuthModal />
+      <UserProfileModal />
       <NotificationToast />
     </div>
   );

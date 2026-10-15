@@ -30,15 +30,36 @@ export default function CartDrawer() {
     setDeliveryMode,
     userLocation,
     placeOrder,
-    showToast
+    showToast,
+    currentUser,
+    setIsAuthModalOpen,
+    setAuthModalTab
   } = useApp();
 
   // Form states
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [customerAddress, setCustomerAddress] = useState(userLocation || '');
+  const [customerName, setCustomerName] = useState(currentUser?.name || '');
+  const [customerPhone, setCustomerPhone] = useState(currentUser?.phone || '');
+  const [customerAddress, setCustomerAddress] = useState(() => {
+    if (currentUser?.addresses?.length > 0) {
+      const def = currentUser.addresses.find((a) => a.isDefault) || currentUser.addresses[0];
+      return def?.address || userLocation || '';
+    }
+    return userLocation || '';
+  });
   const [orderNotes, setOrderNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
+
+  // Auto-sync customer details when user logs in or drawer opens
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.name) setCustomerName(currentUser.name);
+      if (currentUser.phone) setCustomerPhone(currentUser.phone);
+      if (currentUser.addresses?.length > 0) {
+        const def = currentUser.addresses.find((a) => a.isDefault) || currentUser.addresses[0];
+        if (def?.address) setCustomerAddress(def.address);
+      }
+    }
+  }, [currentUser, isCartOpen]);
   
   // Promo voucher state
   const [promoInput, setPromoInput] = useState('');
@@ -315,9 +336,24 @@ export default function CartDrawer() {
 
               {/* Checkout Customer Details */}
               <div className="bg-zinc-900/60 p-4 rounded-2xl border border-zinc-800 space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
-                  <span>Customer Details</span>
-                </h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
+                    <span>Customer Details</span>
+                  </h4>
+                  {!currentUser ? (
+                    <button
+                      type="button"
+                      onClick={() => { setAuthModalTab('login'); setIsAuthModalOpen(true); }}
+                      className="text-amber-400 hover:text-amber-300 text-[11px] font-bold underline cursor-pointer"
+                    >
+                      Sign in for 1-click checkout
+                    </button>
+                  ) : (
+                    <span className="text-emerald-400 text-[10px] font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                      ✓ Auto-filled
+                    </span>
+                  )}
+                </div>
 
                 <div className="space-y-2.5">
                   <input
