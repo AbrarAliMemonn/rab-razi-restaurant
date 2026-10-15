@@ -83,18 +83,6 @@ export default function AuthModal() {
     }
   };
 
-  const fillDemoCustomer = () => {
-    setLoginIdentifier('customer@rabrazi.com');
-    setLoginPassword('customer123');
-    setErrorMessage('');
-  };
-
-  const fillDemoAdmin = () => {
-    setLoginIdentifier('admin@rabrazi.com');
-    setLoginPassword('admin123');
-    setErrorMessage('');
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
       <div 
@@ -212,31 +200,6 @@ export default function AuthModal() {
                   </>
                 )}
               </button>
-
-              {/* Quick Demo Credentials */}
-              <div className="pt-2 border-t border-zinc-800">
-                <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold block mb-2 text-center">
-                  Quick 1-Click Demo Login:
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={fillDemoCustomer}
-                    className="p-2 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-amber-500/50 text-[11px] font-bold text-zinc-300 hover:text-amber-400 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                  >
-                    <User className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Demo Customer</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={fillDemoAdmin}
-                    className="p-2 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-amber-500/50 text-[11px] font-bold text-zinc-300 hover:text-amber-400 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5 text-orange-400" />
-                    <span>Demo Admin</span>
-                  </button>
-                </div>
-              </div>
             </form>
           ) : (
             <form onSubmit={handleRegisterSubmit} className="space-y-3.5">

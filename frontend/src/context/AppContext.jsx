@@ -227,13 +227,17 @@ export function AppProvider({ children }) {
   };
 
   const loginAdmin = (username, password) => {
-    if ((username === 'admin' && password === 'admin123') || (username === 'admin' && password === '')) {
+    const cleanUser = username?.trim().toLowerCase();
+    if (
+      (cleanUser === 'abraralimemon23@gmail.com' && (password === 'admin123' || password === '')) ||
+      (cleanUser === 'admin' && password === 'admin123')
+    ) {
       setIsAdminAuthenticated(true);
       localStorage.setItem('rrr_admin_auth', 'true');
-      showToast('Admin login successful! Welcome Manager.', 'success');
+      showToast('Admin login successful! Welcome Abrar Ali Memon.', 'success');
       return true;
     }
-    showToast('Invalid admin credentials. Use admin / admin123', 'warning');
+    showToast('Invalid admin credentials. Use abraralimemon23@gmail.com', 'warning');
     return false;
   };
 
@@ -311,46 +315,29 @@ export function AppProvider({ children }) {
       const localUsers = JSON.parse(localStorage.getItem('rrr_local_users') || '[]');
       const cleanId = identifier.trim().toLowerCase();
 
-      // Demo customer account
-      if ((cleanId === 'customer@rabrazi.com' || cleanId === '0300-1234567') && password === 'customer123') {
-        const demoUser = {
-          id: 'usr-101',
-          name: 'Muhammad Bilal',
-          email: 'customer@rabrazi.com',
-          phone: '0300-1234567',
-          role: 'customer',
-          addresses: [
-            { id: 'addr-1', label: 'Home', address: 'House 14, Near Shahi Bazaar, Tando Bago, Sindh', isDefault: true }
-          ]
-        };
-        setCurrentUser(demoUser);
-        setAuthToken('mock_jwt_token_demo_user');
-        localStorage.setItem('rrr_current_user', JSON.stringify(demoUser));
-        localStorage.setItem('rrr_auth_token', 'mock_jwt_token_demo_user');
-        setIsAuthModalOpen(false);
-        showToast('Logged in as Muhammad Bilal (Demo Customer)', 'success');
-        return { success: true, user: demoUser };
-      }
-
-      // Demo admin account
-      if ((cleanId === 'admin@rabrazi.com' || cleanId === '0312-9876543') && password === 'admin123') {
-        const demoAdmin = {
-          id: 'usr-admin',
-          name: 'Rab Razi Admin',
-          email: 'admin@rabrazi.com',
-          phone: '0312-9876543',
-          role: 'admin',
-          addresses: [
-            { id: 'addr-admin-1', label: 'Restaurant Branch', address: 'Main Badin-Mirpurkhas Road, Tando Bago, Sindh', isDefault: true }
-          ]
-        };
-        setCurrentUser(demoAdmin);
-        setAuthToken('mock_jwt_token_demo_admin');
-        localStorage.setItem('rrr_current_user', JSON.stringify(demoAdmin));
-        localStorage.setItem('rrr_auth_token', 'mock_jwt_token_demo_admin');
-        setIsAuthModalOpen(false);
-        showToast('Logged in as Rab Razi Admin', 'success');
-        return { success: true, user: demoAdmin };
+      // Dedicated Admin account: abraralimemon23@gmail.com
+      if (cleanId === 'abraralimemon23@gmail.com') {
+        const storedAdmin = localUsers.find((u) => u.email?.toLowerCase() === 'abraralimemon23@gmail.com');
+        const adminPass = storedAdmin ? storedAdmin.password : 'admin123';
+        if (password === adminPass) {
+          const adminUser = {
+            id: 'usr-admin-abrar',
+            name: storedAdmin?.name || 'Abrar Ali Memon',
+            email: 'abraralimemon23@gmail.com',
+            phone: storedAdmin?.phone || '0300-1234567',
+            role: 'admin',
+            addresses: [
+              { id: 'addr-admin-1', label: 'Restaurant Headquarters', address: 'Main Badin-Mirpurkhas Road, Tando Bago, Sindh', isDefault: true }
+            ]
+          };
+          setCurrentUser(adminUser);
+          setAuthToken('jwt_token_admin_abrar');
+          localStorage.setItem('rrr_current_user', JSON.stringify(adminUser));
+          localStorage.setItem('rrr_auth_token', 'jwt_token_admin_abrar');
+          setIsAuthModalOpen(false);
+          showToast('Welcome Abrar Ali Memon! Admin access enabled 👑', 'success');
+          return { success: true, user: adminUser };
+        }
       }
 
       const found = localUsers.find(
@@ -383,7 +370,7 @@ export function AppProvider({ children }) {
       localStorage.setItem('rrr_current_user', JSON.stringify(user));
       localStorage.setItem('rrr_auth_token', token);
       setIsAuthModalOpen(false);
-      showToast(`Welcome to Rab Razi Restaurant, ${user.name}! 🎉`, 'success');
+      showToast(user.role === 'admin' ? `Welcome Admin Abrar Ali Memon! 👑` : `Welcome to Rab Razi Restaurant, ${user.name}! 🎉`, 'success');
       return { success: true, user };
     }
 
@@ -391,13 +378,17 @@ export function AppProvider({ children }) {
     if (res.isOffline) {
       const localUsers = JSON.parse(localStorage.getItem('rrr_local_users') || '[]');
       const newUserId = `usr-${Date.now().toString().slice(-6)}`;
+      const cleanEmail = userData.email ? userData.email.trim().toLowerCase() : '';
+      const isAdmin = cleanEmail === 'abraralimemon23@gmail.com';
+      const role = isAdmin ? 'admin' : 'customer';
+
       const newUser = {
         id: newUserId,
         name: userData.name.trim(),
-        email: userData.email ? userData.email.trim().toLowerCase() : '',
+        email: cleanEmail,
         phone: userData.phone ? userData.phone.trim() : '',
         password: userData.password,
-        role: 'customer',
+        role,
         addresses: userData.address ? [
           { id: `addr-${Date.now()}`, label: 'Home', address: userData.address.trim(), isDefault: true }
         ] : []
@@ -412,7 +403,7 @@ export function AppProvider({ children }) {
       localStorage.setItem('rrr_current_user', JSON.stringify(safeUser));
       localStorage.setItem('rrr_auth_token', `mock_token_${safeUser.id}`);
       setIsAuthModalOpen(false);
-      showToast(`Account created successfully! Welcome ${safeUser.name}!`, 'success');
+      showToast(isAdmin ? 'Welcome Abrar Ali Memon! Admin account created 👑' : `Account created successfully! Welcome ${safeUser.name}!`, 'success');
       return { success: true, user: safeUser };
     }
 

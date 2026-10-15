@@ -1,13 +1,14 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { getUsers, saveUsers } from '../data/db.js';
+import { getUsers, saveUsers, ADMIN_EMAIL } from '../data/db.js';
+import User from '../models/User.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'rab_razi_jwt_super_secret_key_2026_tando_bago';
 
 function generateToken(user) {
   return jwt.sign(
     {
-      id: user.id,
+      id: user.id || user._id,
       email: user.email,
       phone: user.phone,
       role: user.role
@@ -36,12 +37,17 @@ export async function register(req, res) {
       });
     }
 
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
+    const cleanPhone = phone ? phone.trim() : '';
+    const isAdmin = cleanEmail === ADMIN_EMAIL.toLowerCase();
+    const role = isAdmin ? 'admin' : 'customer';
+
     const users = getUsers();
 
     // Check duplicate
     const existing = users.find(
-      (u) => (email && u.email?.toLowerCase() === email.toLowerCase()) || 
-             (phone && u.phone === phone)
+      (u) => (cleanEmail && u.email?.toLowerCase() === cleanEmail) || 
+             (cleanPhone && u.phone === cleanPhone)
     );
 
     if (existing) {
@@ -57,10 +63,10 @@ export async function register(req, res) {
     const newUser = {
       id: newUserId,
       name: name.trim(),
-      email: email ? email.trim().toLowerCase() : '',
-      phone: phone ? phone.trim() : '',
+      email: cleanEmail,
+      phone: cleanPhone,
       passwordHash: hashedPassword,
-      role: 'customer',
+      role,
       addresses: address ? [
         {
           id: `addr-${Date.now()}`,
@@ -72,15 +78,34 @@ export async function register(req, res) {
       createdAt: new Date().toISOString()
     };
 
+    // Save in file store
     users.push(newUser);
     saveUsers(users);
+
+    // Also attempt MongoDB save if connected
+    try {
+      if (User.db?.readyState === 1) {
+        await User.create({
+          name: newUser.name,
+          email: newUser.email,
+          phone: newUser.phone,
+          password: hashedPassword,
+          role: newUser.role,
+          addresses: newUser.addresses
+        });
+      }
+    } catch (dbErr) {
+      // MongoDB non-blocking
+    }
 
     const token = generateToken(newUser);
     const { passwordHash, ...safeUser } = newUser;
 
     return res.status(201).json({
       success: true,
-      message: 'Account created successfully! Welcome to Rab Razi Restaurant.',
+      message: isAdmin 
+        ? 'Welcome Admin! Abrar Ali Memon account registered successfully.'
+        : `Account created successfully! Welcome ${safeUser.name}.`,
       token,
       user: safeUser
     });
@@ -93,7 +118,7 @@ export async function register(req, res) {
 // POST /api/auth/login
 export async function login(req, res) {
   try {
-    const { identifier, password } = req.body; // identifier can be email or phone
+    const { identifier, password } = req.body; // email or phone
 
     if (!identifier || !password) {
       return res.status(400).json({
@@ -102,14 +127,36 @@ export async function login(req, res) {
       });
     }
 
-    const users = getUsers();
     const cleanId = identifier.trim().toLowerCase();
+    const users = getUsers();
 
-    const user = users.find(
+    let user = users.find(
       (u) => u.email?.toLowerCase() === cleanId || 
              u.phone === identifier.trim() || 
              u.phone.replace(/[^0-9]/g, '') === identifier.trim().replace(/[^0-9]/g, '')
     );
+
+    // If not found in file store, check MongoDB if connected
+    if (!user) {
+      try {
+        if (User.db?.readyState === 1) {
+          const mongoUser = await User.findOne({
+            $or: [{ email: cleanId }, { phone: identifier.trim() }]
+          });
+          if (mongoUser) {
+            user = {
+              id: mongoUser._id.toString(),
+              name: mongoUser.name,
+              email: mongoUser.email,
+              phone: mongoUser.phone,
+              passwordHash: mongoUser.password,
+              role: mongoUser.role,
+              addresses: mongoUser.addresses
+            };
+          }
+        }
+      } catch (err) {}
+    }
 
     if (!user) {
       return res.status(401).json({
@@ -124,6 +171,11 @@ export async function login(req, res) {
         success: false,
         message: 'Invalid email/phone or password.'
       });
+    }
+
+    // Ensure role is admin if abraralimemon23@gmail.com
+    if (user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+      user.role = 'admin';
     }
 
     const token = generateToken(user);
@@ -165,6 +217,10 @@ export async function updateProfile(req, res) {
     if (phone) user.phone = phone.trim();
     if (email) user.email = email.trim().toLowerCase();
     if (Array.isArray(addresses)) user.addresses = addresses;
+
+    if (user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+      user.role = 'admin';
+    }
 
     users[userIndex] = user;
     saveUsers(users);

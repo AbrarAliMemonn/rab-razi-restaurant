@@ -9,42 +9,22 @@ const __dirname = path.dirname(__filename);
 const USERS_FILE = path.join(__dirname, 'users.json');
 const ORDERS_FILE = path.join(__dirname, 'orders.json');
 
-// Initial demo users
+// Admin email configured per requirement
+export const ADMIN_EMAIL = 'abraralimemon23@gmail.com';
+
+// Pre-seeded Admin account (no demo accounts)
 const INITIAL_USERS = [
   {
-    id: 'usr-101',
-    name: 'Muhammad Bilal',
-    email: 'customer@rabrazi.com',
+    id: 'usr-admin-abrar',
+    name: 'Abrar Ali Memon',
+    email: 'abraralimemon23@gmail.com',
     phone: '0300-1234567',
-    passwordHash: bcrypt.hashSync('customer123', 10),
-    role: 'customer',
-    addresses: [
-      {
-        id: 'addr-1',
-        label: 'Home',
-        address: 'House 14, Near Shahi Bazaar, Tando Bago, Sindh',
-        isDefault: true
-      },
-      {
-        id: 'addr-2',
-        label: 'Office / Shop',
-        address: 'Shop 22, Station Road, Tando Bago, Sindh',
-        isDefault: false
-      }
-    ],
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'usr-admin',
-    name: 'Rab Razi Admin',
-    email: 'admin@rabrazi.com',
-    phone: '0312-9876543',
     passwordHash: bcrypt.hashSync('admin123', 10),
     role: 'admin',
     addresses: [
       {
         id: 'addr-admin-1',
-        label: 'Restaurant Branch',
+        label: 'Restaurant Headquarters',
         address: 'Main Badin-Mirpurkhas Road, Tando Bago, Sindh',
         isDefault: true
       }
@@ -57,7 +37,19 @@ const INITIAL_USERS = [
 function ensureFiles() {
   if (!fs.existsSync(USERS_FILE)) {
     fs.writeFileSync(USERS_FILE, JSON.stringify(INITIAL_USERS, null, 2), 'utf-8');
+  } else {
+    // If users.json exists, verify abraralimemon23@gmail.com is present with role admin
+    try {
+      const data = fs.readFileSync(USERS_FILE, 'utf-8');
+      const users = JSON.parse(data);
+      const hasAdmin = users.find((u) => u.email?.toLowerCase() === ADMIN_EMAIL);
+      if (!hasAdmin) {
+        users.unshift(INITIAL_USERS[0]);
+        fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
+      }
+    } catch {}
   }
+
   if (!fs.existsSync(ORDERS_FILE)) {
     fs.writeFileSync(ORDERS_FILE, JSON.stringify([], null, 2), 'utf-8');
   }
