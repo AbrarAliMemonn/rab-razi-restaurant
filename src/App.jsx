@@ -496,28 +496,7 @@ function MainLayout() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 text-[11px] text-zinc-500">
-            <span>© {new Date().getFullYear()} Rab Razi Restaurant.</span>
-            <span>•</span>
-            
-            {/* Rider Mode Link */}
-            <button
-              onClick={switchToRider}
-              className="text-zinc-400 hover:text-amber-400 transition-colors flex items-center gap-1"
-            >
-              <Bike className="w-3.5 h-3.5 text-amber-400" />
-              <span>Rider GPS Mode</span>
-            </button>
-
-            <span>•</span>
-
-            {/* Admin Link */}
-            <button
-              onClick={switchToAdmin}
-              className="text-zinc-400 hover:text-amber-400 transition-colors flex items-center gap-1"
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Staff / Admin Portal</span>
-            </button>
+            <span>© {new Date().getFullYear()} Rab Razi Restaurant. All rights reserved.</span>
           </div>
         </div>
       </footer>

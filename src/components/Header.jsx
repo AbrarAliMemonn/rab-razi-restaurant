@@ -3,12 +3,10 @@ import {
   ShoppingBag, 
   MapPin, 
   Search, 
-  ShieldCheck, 
   Smartphone, 
   Monitor, 
   Clock, 
-  Sparkles,
-  Lock
+  Sparkles
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -25,8 +23,7 @@ export default function Header() {
     setSearchQuery,
     isMobileFrameMode,
     setIsMobileFrameMode,
-    setCurrentTab,
-    switchToAdmin
+    setCurrentTab
   } = useApp();
 
   return (
@@ -146,16 +143,6 @@ export default function Header() {
                   <span>App Frame</span>
                 </>
               )}
-            </button>
-
-            {/* Separate Admin Portal Link */}
-            <button
-              onClick={switchToAdmin}
-              title="Open Separate Restaurant Admin Panel"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-amber-400 hover:border-amber-500/40 transition-all shadow-sm active:scale-95"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden xs:inline">Admin Portal</span>
             </button>
 
             {/* Cart Button with Live Counter Badge */}
