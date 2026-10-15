@@ -1,0 +1,482 @@
+export const DEFAULT_CATEGORIES = [
+  { id: 'all', name: 'All Items', icon: '🍽️' },
+  { id: 'deals', name: 'Special Deals', icon: '🔥' },
+  { id: 'karahi', name: 'Karahi & Handi', icon: '🍲' },
+  { id: 'bbq', name: 'BBQ & Grills', icon: '🍢' },
+  { id: 'biryani', name: 'Biryani & Pulao', icon: '🍚' },
+  { id: 'fastfood', name: 'Burgers & Fast Food', icon: '🍔' },
+  { id: 'tandoor', name: 'Naan & Tandoor', icon: '🫓' },
+  { id: 'drinks', name: 'Drinks & Desserts', icon: '🥤' }
+];
+
+export const INITIAL_MENU_ITEMS = [
+  // --- SPECIAL DEALS ---
+  {
+    id: 'deal-1',
+    name: 'Rab Razi Royal Feast (4-5 Persons)',
+    category: 'deals',
+    price: 3499,
+    originalPrice: 4200,
+    isDeal: true,
+    discountBadge: 'Save Rs. 700',
+    description: '1kg Chicken White Handi + 4 Seekh Kabab + 4 Roghni Naan + 1 Matka Biryani + 1.5L Drink + Raita & Salad',
+    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80',
+    tags: ['Best Seller', 'Family Bundle'],
+    inStock: true,
+    rating: 4.9,
+    reviewsCount: 142,
+    spicyLevel: 'Medium'
+  },
+  {
+    id: 'deal-2',
+    name: 'Dosti BBQ Platter Deal',
+    category: 'deals',
+    price: 1999,
+    originalPrice: 2450,
+    isDeal: true,
+    discountBadge: 'Save Rs. 450',
+    description: '6pcs Malai Boti + 2 Beef Seekh Kabab + 1 Chicken Tikka + 2 Roghni Naan + Chutney & Mint Raita',
+    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    tags: ['Must Try', 'BBQ Special'],
+    inStock: true,
+    rating: 4.8,
+    reviewsCount: 98,
+    spicyLevel: 'Medium'
+  },
+  {
+    id: 'deal-3',
+    name: 'Twin Zinger Mania Deal',
+    category: 'deals',
+    price: 1299,
+    originalPrice: 1650,
+    isDeal: true,
+    discountBadge: '22% OFF',
+    description: '2x Crispy Zinger Burgers + 1x Large Seasoned Fries + 2x 345ml Chilled Soft Drinks',
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80',
+    tags: ['Fast Food', 'Youth Choice'],
+    inStock: true,
+    rating: 4.7,
+    reviewsCount: 215,
+    spicyLevel: 'Spicy'
+  },
+  {
+    id: 'deal-4',
+    name: 'Solo Biryani Delight Deal',
+    category: 'deals',
+    price: 699,
+    originalPrice: 850,
+    isDeal: true,
+    discountBadge: 'Economy Deal',
+    description: 'Special Chicken Dum Biryani + 1 Shami Kabab + Zeera Raita + 345ml Soft Drink',
+    image: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=800&q=80',
+    tags: ['Lunch Special', 'Value Deal'],
+    inStock: true,
+    rating: 4.9,
+    reviewsCount: 310,
+    spicyLevel: 'Medium'
+  },
+
+  // --- KARAHI & HANDI ---
+  {
+    id: 'karahi-1',
+    name: 'Rab Razi Special Desi Ghee Mutton Karahi',
+    category: 'karahi',
+    price: 2600,
+    originalPrice: 2800,
+    isDeal: false,
+    description: 'Tender fresh mutton cooked in pure desi ghee with crushed black pepper, green chilies, and julienne ginger.',
+    image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=800&q=80',
+    tags: ['Chef Special', 'Pure Desi Ghee'],
+    inStock: true,
+    rating: 5.0,
+    reviewsCount: 280,
+    spicyLevel: 'Hot',
+    portionOptions: ['Half (0.5kg)', 'Full (1kg)']
+  },
+  {
+    id: 'karahi-2',
+    name: 'Chicken Shinwari Karahi',
+    category: 'karahi',
+    price: 1550,
+    originalPrice: 1700,
+    isDeal: false,
+    description: 'Authentic Peshawar Shinwari style chicken prepared strictly with fresh tomatoes, green chilies, animal fat/oil, and rock salt.',
+    image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80',
+    tags: ['Traditional Shinwari'],
+    inStock: true,
+    rating: 4.8,
+    reviewsCount: 190,
+    spicyLevel: 'Mild',
+    portionOptions: ['Half (0.5kg)', 'Full (1kg)']
+  },
+  {
+    id: 'karahi-3',
+    name: 'Royal Chicken Makhni Handi',
+    category: 'karahi',
+    price: 1650,
+    originalPrice: 1800,
+    isDeal: false,
+    description: 'Boneless chicken cubes simmered in creamy butter sauce, cashew paste, and aromatic spices cooked in clay handi.',
+    image: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&w=800&q=80',
+    tags: ['Creamy', 'Boneless'],
+    inStock: true,
+    rating: 4.9,
+    reviewsCount: 165,
+    spicyLevel: 'Mild',
+    portionOptions: ['Half', 'Full']
+  },
+
+  // --- BBQ & GRILLS ---
+  {
+    id: 'bbq-1',
+    name: 'Melt-in-Mouth Chicken Malai Boti',
+    category: 'bbq',
+    price: 850,
+    originalPrice: 950,
+    isDeal: false,
+    description: '8 juicy boneless chicken cubes marinated in heavy fresh cream, green cardamom, white pepper, and grilled on open charcoal.',
+    image: 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&w=800&q=80',
+    tags: ['Top Pick', 'Kid Friendly'],
+    inStock: true,
+    rating: 4.9,
+    reviewsCount: 340,
+    spicyLevel: 'Mild'
+  },
+  {
+    id: 'bbq-2',
+    name: 'Peshawari Chapli Kabab (2 Pcs)',
+    category: 'bbq',
+    price: 750,
+    originalPrice: 850,
+    isDeal: false,
+    description: 'Crispy pan-fried minced beef patties infused with pomegranate seeds (anardana), coriander, tomatoes, and crushed eggs.',
+    image: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=800&q=80',
+    tags: ['Crispy & Juicy'],
+    inStock: true,
+    rating: 4.8,
+    reviewsCount: 178,
+    spicyLevel: 'Hot'
+  },
+  {
+    id: 'bbq-3',
+    name: 'Smoked Beef Seekh Kabab (4 Pcs)',
+    category: 'bbq',
+    price: 890,
+    originalPrice: 990,
+    isDeal: false,
+    description: 'Finely ground beef seasoned with brown onion paste, roasted cumin, garam masala, skewered on coal grill.',
+    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80',
+    tags: ['Classic BBQ'],
+    inStock: true,
+    rating: 4.7,
+    reviewsCount: 112,
+    spicyLevel: 'Medium'
+  },
+
+  // --- BIRYANI & PULAO ---
+  {
+    id: 'biryani-1',
+    name: 'Rab Razi Special Matka Dum Biryani',
+    category: 'biryani',
+    price: 650,
+    originalPrice: 750,
+    isDeal: false,
+    description: 'Fragrant long-grain aged basmati rice layered with spicy succulent chicken, saffron, potatoes, sealed with dough in clay matka.',
+    image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80',
+    tags: ['Dum Pukht', 'Signature'],
+    inStock: true,
+    rating: 5.0,
+    reviewsCount: 420,
+    spicyLevel: 'Medium'
+  },
+  {
+    id: 'biryani-2',
+    name: 'Special Beef Nalli Biryani',
+    category: 'biryani',
+    price: 850,
+    originalPrice: 950,
+    isDeal: false,
+    description: 'Rich and spicy Karachi style biryani served with juicy bone marrow nalli shank and aromatic golden rice.',
+    image: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=800&q=80',
+    tags: ['Rich Bone Marrow'],
+    inStock: true,
+    rating: 4.9,
+    reviewsCount: 230,
+    spicyLevel: 'Hot'
+  },
+  {
+    id: 'biryani-3',
+    name: 'Bannu Beef Pulao (Double Meat)',
+    category: 'biryani',
+    price: 790,
+    originalPrice: 890,
+    isDeal: false,
+    description: 'Traditional Pashtun yakhni beef pulao cooked in hearty bone broth with tender beef chunks and subtle aromatic spices.',
+    image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=800&q=80',
+    tags: ['Bannu Special'],
+    inStock: true,
+    rating: 4.8,
+    reviewsCount: 185,
+    spicyLevel: 'Mild'
+  },
+
+  // --- BURGERS & FAST FOOD ---
+  {
+    id: 'fastfood-1',
+    name: 'Monster Crunchy Zinger Burger',
+    category: 'fastfood',
+    price: 590,
+    originalPrice: 690,
+    isDeal: false,
+    description: 'Crispy fried chicken breast fillet tossed in secret spice rub, spicy mayo, iceberg lettuce in a toasted sesame bun.',
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80',
+    tags: ['Ultra Crunchy'],
+    inStock: true,
+    rating: 4.8,
+    reviewsCount: 310,
+    spicyLevel: 'Spicy'
+  },
+  {
+    id: 'fastfood-2',
+    name: 'Smoked Double Beef Smash Burger',
+    category: 'fastfood',
+    price: 790,
+    originalPrice: 890,
+    isDeal: false,
+    description: 'Two 100% pure beef smash patties with melted cheddar cheese, caramelized onions, pickles, and signature house sauce.',
+    image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=800&q=80',
+    tags: ['Double Cheese'],
+    inStock: true,
+    rating: 4.9,
+    reviewsCount: 195,
+    spicyLevel: 'Medium'
+  },
+  {
+    id: 'fastfood-3',
+    name: 'Loaded Pizza Fries (Supreme)',
+    category: 'fastfood',
+    price: 550,
+    originalPrice: 650,
+    isDeal: false,
+    description: 'Golden crinkle fries smothered in mozzarella cheese, pizza sauce, chicken fajita chunks, olives, and jalapenos.',
+    image: 'https://images.unsplash.com/photo-1585109649139-366815a0d713?auto=format&fit=crop&w=800&q=80',
+    tags: ['Cheese Pull'],
+    inStock: true,
+    rating: 4.7,
+    reviewsCount: 140,
+    spicyLevel: 'Medium'
+  },
+
+  // --- NAAN & TANDOOR ---
+  {
+    id: 'tandoor-1',
+    name: 'Garlic Butter Roghni Naan',
+    category: 'tandoor',
+    price: 130,
+    originalPrice: 150,
+    isDeal: false,
+    description: 'Fluffy tandoori naan brushed with pure butter, sesame seeds, and crushed roasted garlic.',
+    image: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?auto=format&fit=crop&w=800&q=80',
+    tags: ['Fresh Tandoor'],
+    inStock: true,
+    rating: 4.9,
+    reviewsCount: 512,
+    spicyLevel: 'Mild'
+  },
+  {
+    id: 'tandoor-2',
+    name: 'Double Stuffed Cheese Naan',
+    category: 'tandoor',
+    price: 380,
+    originalPrice: 420,
+    isDeal: false,
+    description: 'Crispy outer naan stuffed with molten mozzarella & cheddar cheese and mild herbs.',
+    image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=800&q=80',
+    tags: ['Cheese Lover'],
+    inStock: true,
+    rating: 4.8,
+    reviewsCount: 220,
+    spicyLevel: 'Mild'
+  },
+
+  // --- DRINKS & DESSERTS ---
+  {
+    id: 'drinks-1',
+    name: 'Royal Shahi Rabri Kheer (Matka)',
+    category: 'drinks',
+    price: 320,
+    originalPrice: 380,
+    isDeal: false,
+    description: 'Traditional slow-cooked condensed milk dessert infused with saffron, kewra water, pistachios, and silver leaf.',
+    image: 'https://images.unsplash.com/photo-1579954115563-e72bf1381629?auto=format&fit=crop&w=800&q=80',
+    tags: ['Sweet Tooth', 'Desi Delight'],
+    inStock: true,
+    rating: 5.0,
+    reviewsCount: 195,
+    spicyLevel: 'Sweet'
+  },
+  {
+    id: 'drinks-2',
+    name: 'Chilled Mint Lemon Margarita',
+    category: 'drinks',
+    price: 250,
+    originalPrice: 290,
+    isDeal: false,
+    description: 'Refreshing blend of fresh mint leaves, lemon juice, crushed ice, and black salt.',
+    image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80',
+    tags: ['Super Refreshing'],
+    inStock: true,
+    rating: 4.9,
+    reviewsCount: 260,
+    spicyLevel: 'Beverage'
+  }
+];
+
+export const INITIAL_ORDERS = [
+  {
+    id: 'RRR-7821',
+    customerName: 'Muhammad Ali',
+    customerPhone: '0300-1234567',
+    customerAddress: 'House 14, Near Shahi Bazaar, Tando Bago',
+    deliveryType: 'Delivery',
+    paymentMethod: 'Cash on Delivery',
+    items: [
+      { id: 'deal-1', name: 'Rab Razi Royal Feast (4-5 Persons)', price: 3499, quantity: 1 },
+      { id: 'tandoor-1', name: 'Garlic Butter Roghni Naan', price: 130, quantity: 2 }
+    ],
+    subtotal: 3759,
+    deliveryFee: 0,
+    discount: 200,
+    total: 3559,
+    status: 'on_the_way', // 'pending' | 'preparing' | 'on_the_way' | 'delivered' | 'cancelled'
+    riderName: 'Farhan Tariq (Rider #14)',
+    riderPhone: '0312-9876543',
+    riderBike: 'Honda CG 125 (BDN-992)',
+    estimatedMinutes: 12,
+    createdAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    statusTimestamps: {
+      pending: new Date(Date.now() - 25 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      preparing: new Date(Date.now() - 18 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      on_the_way: new Date(Date.now() - 7 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+  },
+  {
+    id: 'RRR-6534',
+    customerName: 'Ayesha Khan',
+    customerPhone: '0321-7654321',
+    customerAddress: 'Hospital Road, Opposite Civil Hospital, Tando Bago',
+    deliveryType: 'Delivery',
+    paymentMethod: 'JazzCash',
+    items: [
+      { id: 'biryani-1', name: 'Rab Razi Special Matka Dum Biryani', price: 650, quantity: 2 },
+      { id: 'drinks-2', name: 'Chilled Mint Lemon Margarita', price: 250, quantity: 2 }
+    ],
+    subtotal: 1800,
+    deliveryFee: 100,
+    discount: 0,
+    total: 1900,
+    status: 'preparing',
+    riderName: 'Assigned upon packing',
+    riderPhone: '',
+    riderBike: '',
+    estimatedMinutes: 28,
+    createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+    statusTimestamps: {
+      pending: new Date(Date.now() - 10 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      preparing: new Date(Date.now() - 3 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+  },
+  {
+    id: 'RRR-5109',
+    customerName: 'Hamza Sheikh',
+    customerPhone: '0333-5551234',
+    customerAddress: 'Shop 8, Station Road, Tando Bago',
+    deliveryType: 'Takeaway',
+    paymentMethod: 'EasyPaisa',
+    items: [
+      { id: 'deal-3', name: 'Twin Zinger Mania Deal', price: 1299, quantity: 1 }
+    ],
+    subtotal: 1299,
+    deliveryFee: 0,
+    discount: 100,
+    total: 1199,
+    status: 'delivered',
+    riderName: 'Counter Pickup',
+    riderPhone: '',
+    riderBike: '',
+    estimatedMinutes: 0,
+    createdAt: new Date(Date.now() - 95 * 60 * 1000).toISOString(),
+    statusTimestamps: {
+      pending: new Date(Date.now() - 95 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      preparing: new Date(Date.now() - 85 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      on_the_way: new Date(Date.now() - 65 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      delivered: new Date(Date.now() - 40 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+  }
+];
+
+export const INITIAL_SETTINGS = {
+  restaurantName: 'Rab Razi Restaurant',
+  tagline: 'Taste of Blessing & Royal Hospitality',
+  phone: '0300-9998877',
+  address: 'Rab Razi Restaurant, Tando Bago, Sindh (Plus Code: QXQ6+C96)',
+  city: 'Tando Bago',
+  district: 'Badin',
+  province: 'Sindh',
+  plusCode: 'QXQ6+C96',
+  fullPlusCode: '7JPCQXQ6+C96',
+  googleMapsUrl: 'https://maps.app.goo.gl/j9TWCvYC6UaRACuf8',
+  latitude: 24.788538,
+  longitude: 68.960891,
+  isOpen: true,
+  openingHours: '12:00 PM – 02:00 AM',
+  deliveryFee: 80,
+  freeDeliveryThreshold: 1500,
+  estimatedDeliveryTime: '25-35 min',
+  promoCode: 'RAZI20',
+  promoDiscountPercent: 20,
+  announcement: '🎉 Rab Razi Restaurant, Tando Bago: Flat 20% OFF using code "RAZI20" on all orders!'
+};
+
+export const INITIAL_RIDERS = [
+  {
+    id: 'rider-1',
+    name: 'Farhan Tariq (Rider #14)',
+    phone: '0312-9876543',
+    bike: 'Honda CG 125 (BDN-992)',
+    status: 'on_delivery',
+    totalDeliveries: 142,
+    rating: 4.9,
+    joinedDate: '2026-01-15'
+  },
+  {
+    id: 'rider-2',
+    name: 'Bilal Ahmed (Rider #28)',
+    phone: '0315-7788990',
+    bike: 'Yamaha YBR 125 (BDN-4512)',
+    status: 'available',
+    totalDeliveries: 98,
+    rating: 4.8,
+    joinedDate: '2026-02-10'
+  },
+  {
+    id: 'rider-3',
+    name: 'Usman Ali (Rider #07)',
+    phone: '0334-1122334',
+    bike: 'Honda CD 70 (HYD-7801)',
+    status: 'available',
+    totalDeliveries: 74,
+    rating: 4.9,
+    joinedDate: '2026-03-01'
+  },
+  {
+    id: 'rider-4',
+    name: 'Hamza Malik (Rider #03)',
+    phone: '0300-4455667',
+    bike: 'Suzuki GS 150 (ISB-1120)',
+    status: 'off_duty',
+    totalDeliveries: 110,
+    rating: 4.7,
+    joinedDate: '2025-11-20'
+  }
+];

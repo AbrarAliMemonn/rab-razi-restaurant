@@ -1,0 +1,42 @@
+[
+  {
+    "id": "usr-101",
+    "name": "Muhammad Bilal",
+    "email": "customer@rabrazi.com",
+    "phone": "0300-1234567",
+    "passwordHash": "$2a$10$jT496bKjpUDnHragNNrD9.sAiBCc52Yln.QZEHfNUfGTayGLtLh.O",
+    "role": "customer",
+    "addresses": [
+      {
+        "id": "addr-1",
+        "label": "Home",
+        "address": "House 14, Near Shahi Bazaar, Tando Bago, Sindh",
+        "isDefault": true
+      },
+      {
+        "id": "addr-2",
+        "label": "Office / Shop",
+        "address": "Shop 22, Station Road, Tando Bago, Sindh",
+        "isDefault": false
+      }
+    ],
+    "createdAt": "2026-10-15T11:05:44.159Z"
+  },
+  {
+    "id": "usr-admin",
+    "name": "Rab Razi Admin",
+    "email": "admin@rabrazi.com",
+    "phone": "0312-9876543",
+    "passwordHash": "$2a$10$5hj8s/Y0jZ0j0QhAvdOOCe6X2qdkScMcG4iyD8sVLKKT8UPDensmC",
+    "role": "admin",
+    "addresses": [
+      {
+        "id": "addr-admin-1",
+        "label": "Restaurant Branch",
+        "address": "Main Badin-Mirpurkhas Road, Tando Bago, Sindh",
+        "isDefault": true
+      }
+    ],
+    "createdAt": "2026-10-15T11:05:44.449Z"
+  }
+]
