@@ -67,8 +67,8 @@ export default function AdminPanel() {
   } = useApp();
 
   // Admin login credentials state
-  const [loginUsername, setLoginUsername] = useState('admin');
-  const [loginPassword, setLoginPassword] = useState('admin123');
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
 
   // Navigation tab in Admin
   const [activeAdminTab, setActiveAdminTab] = useState('orders'); // 'orders' | 'riders' | 'items' | 'settings'
@@ -191,7 +191,7 @@ export default function AdminPanel() {
   const handleSaveItem = (e) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.price) {
-      showToast('Dish ka naam aur qeemat darj karein', 'warning');
+      showToast('Please enter dish name and price', 'warning');
       return;
     }
 
@@ -212,7 +212,7 @@ export default function AdminPanel() {
 
     if (editingItem) {
       updateMenuItem({ ...editingItem, ...payload });
-      showToast(`"${payload.name}" kamyabi se update ho gaya! ✅`);
+      showToast(`"${payload.name}" updated successfully! ✅`);
     } else {
       addMenuItem(payload);
     }
@@ -246,7 +246,7 @@ export default function AdminPanel() {
   const handleSaveRider = (e) => {
     e.preventDefault();
     if (!riderFormData.name.trim() || !riderFormData.phone.trim()) {
-      showToast('Rider ka naam aur mobile number zaroori hai', 'warning');
+      showToast('Rider name and phone number are required', 'warning');
       return;
     }
 
@@ -258,7 +258,7 @@ export default function AdminPanel() {
         bike: riderFormData.bike.trim() || 'Honda CG 125',
         status: riderFormData.status
       });
-      showToast(`Rider "${riderFormData.name}" update ho gaya! ✅`);
+      showToast(`Rider "${riderFormData.name}" updated successfully! ✅`);
     } else {
       addRider({
         name: riderFormData.name.trim(),
@@ -280,7 +280,7 @@ export default function AdminPanel() {
       freeDeliveryThreshold: Number(settingsForm.freeDeliveryThreshold),
       promoDiscountPercent: Number(settingsForm.promoDiscountPercent)
     });
-    showToast('Restaurant settings kamyabi se save ho gayin! ✅', 'success');
+    showToast('Restaurant settings saved successfully! ✅', 'success');
   };
 
   // Toggle Restaurant Open / Close
@@ -290,8 +290,8 @@ export default function AdminPanel() {
     updateSettings({ ...settingsForm, isOpen: nextIsOpen });
     showToast(
       nextIsOpen
-        ? 'Dukaan khol di gayi hai! (Orders Open) 🟢'
-        : 'Dukaan band kar di gayi hai (Orders Paused) 🔴',
+        ? 'Store is now open for orders! 🟢'
+        : 'Store is now closed (Orders Paused) 🔴',
       nextIsOpen ? 'success' : 'info'
     );
   };
@@ -402,10 +402,10 @@ export default function AdminPanel() {
                     ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/30'
                     : 'bg-red-500/20 text-red-400 border-red-500/40 hover:bg-red-500/30'
                 }`}
-                title="Dukaan kholne ya band karne ke liye click karein"
+                title="Click to toggle store open/closed status"
               >
                 <span className={`w-2 h-2 rounded-full ${settingsForm.isOpen ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
-                <span>{settingsForm.isOpen ? '🟢 Dukaan Khuli Hai' : '🔴 Dukaan Band Hai'}</span>
+                <span>{settingsForm.isOpen ? '🟢 Store Open' : '🔴 Store Closed'}</span>
               </button>
             </div>
             
@@ -425,7 +425,7 @@ export default function AdminPanel() {
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md transition-all active:scale-95"
           >
             <Plus className="w-3.5 h-3.5 stroke-[3]" />
-            <span>Nayi Dish Add Karein</span>
+            <span>Add New Dish</span>
           </button>
 
           <button
@@ -433,14 +433,14 @@ export default function AdminPanel() {
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-zinc-700 transition-all active:scale-95"
           >
             <Bike className="w-3.5 h-3.5" />
-            <span>Naya Rider Add Karein</span>
+            <span>Add New Rider</span>
           </button>
 
           {/* Switch to Rider Portal */}
           <button
             onClick={switchToRider}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-amber-400 border border-amber-500/30 transition-all active:scale-95"
-            title="Rider GPS live tracking app open karein"
+            title="Open Rider GPS tracking portal"
           >
             <Bike className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">Rider GPS App</span>
@@ -450,7 +450,7 @@ export default function AdminPanel() {
           <button
             onClick={switchToUser}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700/80 transition-all active:scale-95"
-            title="Customer app preview dekhein"
+            title="View Customer App"
           >
             <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
             <span className="hidden sm:inline">Customer App</span>
@@ -460,7 +460,7 @@ export default function AdminPanel() {
           <button
             onClick={logoutAdmin}
             className="p-2 rounded-xl bg-zinc-900 hover:bg-red-950/60 text-zinc-400 hover:text-red-400 border border-zinc-800 transition-all active:scale-95"
-            title="Admin session khatam karein"
+            title="Log out of Admin session"
           >
             <LogOut className="w-4 h-4" />
           </button>
@@ -473,7 +473,7 @@ export default function AdminPanel() {
         <div className="bg-zinc-900/90 border border-zinc-800/80 p-4 rounded-3xl space-y-1 hover:border-amber-500/40 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-              Kul Kamayi (Revenue)
+              Total Revenue
             </span>
             <div className="w-7 h-7 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
@@ -482,7 +482,7 @@ export default function AdminPanel() {
           <div className="text-xl sm:text-2xl font-black text-amber-400 font-mono">
             Rs. {totalRevenue.toLocaleString()}
           </div>
-          <span className="text-[10px] text-zinc-500 block">Deliver hue orders se</span>
+          <span className="text-[10px] text-zinc-500 block">From delivered orders</span>
         </div>
 
         {/* Active Live Orders */}
@@ -502,7 +502,7 @@ export default function AdminPanel() {
             {activeOrdersCount} Orders
           </div>
           <span className="text-[10px] text-zinc-500 block">
-            {pendingOrdersCount} naye, {preparingOrdersCount} cooking, {onTheWayOrdersCount} on road
+            {pendingOrdersCount} pending, {preparingOrdersCount} preparing, {onTheWayOrdersCount} on road
           </span>
         </div>
 
@@ -523,7 +523,7 @@ export default function AdminPanel() {
             {riders.length} Riders
           </div>
           <span className="text-[10px] text-zinc-500 block">
-            {availableRidersCount} available, {onDeliveryRidersCount} deliver kar rahe hain
+            {availableRidersCount} available, {onDeliveryRidersCount} on delivery
           </span>
         </div>
 
@@ -544,7 +544,7 @@ export default function AdminPanel() {
             {menuItems.length} Dishes
           </div>
           <span className="text-[10px] text-zinc-500 block">
-            {menuItems.filter((i) => i.isDeal).length} deals active hain
+            {menuItems.filter((i) => i.isDeal).length} deals active
           </span>
         </div>
       </div>
@@ -552,10 +552,10 @@ export default function AdminPanel() {
       {/* 3. USER-FRIENDLY TABS WITH EMOJIS & BADGES */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-zinc-900/80 p-1.5 rounded-2xl border border-zinc-800">
         {[
-          { id: 'orders', label: 'Live Orders', urdu: 'گاہکوں کے آرڈرز', icon: '📋', count: orders.length, activeBadge: pendingOrdersCount > 0 ? `${pendingOrdersCount} New` : null },
-          { id: 'riders', label: 'Delivery Riders', urdu: 'رائیڈرز اور بائیک', icon: '🛵', count: riders.length },
-          { id: 'items', label: 'Menu & Deals', urdu: 'کھانے اور ڈیلز', icon: '🍽️', count: menuItems.length },
-          { id: 'settings', label: 'Store Settings', urdu: 'دکان کی سیٹنگز', icon: '⚙️' }
+          { id: 'orders', label: 'Live Orders', subtitle: 'Customer Orders', icon: '📋', count: orders.length, activeBadge: pendingOrdersCount > 0 ? `${pendingOrdersCount} New` : null },
+          { id: 'riders', label: 'Delivery Riders', subtitle: 'Fleet & Drivers', icon: '🛵', count: riders.length },
+          { id: 'items', label: 'Menu & Deals', subtitle: 'Dishes & Combos', icon: '🍽️', count: menuItems.length },
+          { id: 'settings', label: 'Store Settings', subtitle: 'Store Timings & Profile', icon: '⚙️' }
         ].map((tab) => {
           const isActive = activeAdminTab === tab.id;
           return (
@@ -578,7 +578,7 @@ export default function AdminPanel() {
                 )}
               </div>
               <span className={`text-[9px] mt-0.5 ${isActive ? 'text-zinc-950/80 font-bold' : 'text-zinc-500'}`}>
-                {tab.urdu}
+                {tab.subtitle}
               </span>
 
               {/* Alert notification bubble on tab */}
@@ -602,9 +602,9 @@ export default function AdminPanel() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-900/60 p-3 rounded-2xl border border-zinc-800">
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
               {[
-                { id: 'all', label: 'All Orders (تمام)', count: orders.length, color: 'zinc' },
-                { id: 'pending', label: '⏳ Naye Orders (Pending)', count: pendingOrdersCount, color: 'blue' },
-                { id: 'preparing', label: '🍳 Kitchen Cooking', count: preparingOrdersCount, color: 'orange' },
+                { id: 'all', label: 'All Orders', count: orders.length, color: 'zinc' },
+                { id: 'pending', label: '⏳ Pending Orders', count: pendingOrdersCount, color: 'blue' },
+                { id: 'preparing', label: '🍳 Kitchen Preparing', count: preparingOrdersCount, color: 'orange' },
                 { id: 'on_the_way', label: '🛵 On The Road', count: onTheWayOrdersCount, color: 'amber' },
                 { id: 'delivered', label: '✓ Delivered', count: deliveredOrdersCount, color: 'emerald' }
               ].map((f) => (
@@ -634,9 +634,9 @@ export default function AdminPanel() {
           {filteredOrders.length === 0 ? (
             <div className="text-center py-16 bg-zinc-900/40 rounded-3xl border border-zinc-800 text-zinc-400 space-y-2">
               <div className="text-4xl">📋</div>
-              <h3 className="font-bold text-white text-sm">Is Filter Me Koi Order Nahi Hai</h3>
+              <h3 className="font-bold text-white text-sm">No Orders in this Filter</h3>
               <p className="text-xs text-zinc-500">
-                Customer jab naya order place karega to yahan foran live popup nazar aayega.
+                New customer orders will appear here in real-time.
               </p>
             </div>
           ) : (
@@ -669,7 +669,7 @@ export default function AdminPanel() {
                             ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                             : 'bg-blue-500/20 text-blue-400 border border-blue-500/30 font-black'
                         }`}>
-                          {isPending ? '🔔 Naya Order (Pending)' : isPreparing ? '🍳 Kitchen Cooking' : isOnTheWay ? '🛵 On The Road' : '✓ Delivered'}
+                          {isPending ? '🔔 New Order (Pending)' : isPreparing ? '🍳 Kitchen Preparing' : isOnTheWay ? '🛵 On The Road' : '✓ Delivered'}
                         </span>
 
                         <span className="text-xs text-zinc-400">
@@ -684,7 +684,7 @@ export default function AdminPanel() {
                       {/* Total Amount & Track Preview */}
                       <div className="flex items-center gap-3">
                         <div className="text-right">
-                          <span className="text-xs text-zinc-400 block font-medium">Kul Raqam (Total):</span>
+                          <span className="text-xs text-zinc-400 block font-medium">Total Amount:</span>
                           <span className="text-base font-black text-amber-400 font-mono">
                             Rs. {order.total?.toLocaleString()}
                           </span>
@@ -698,7 +698,7 @@ export default function AdminPanel() {
                             setCurrentTab('tracking');
                           }}
                           className="text-xs text-amber-400 hover:text-amber-300 font-bold px-3 py-1.5 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center gap-1.5 transition-all shadow-sm"
-                          title="Customer view me is order ka live tracking map dekhein"
+                          title="View live tracking map for this order"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           <span>Track Map</span>
@@ -741,9 +741,9 @@ export default function AdminPanel() {
 
                           <button
                             type="button"
-                            onClick={() => openWhatsApp(order.customerPhone, `Assalam-o-Alaikum ${order.customerName}! Rab Razi Restaurant se aapka order #${order.id} receive ho gaya hai.`)}
+                            onClick={() => openWhatsApp(order.customerPhone, `Hello ${order.customerName}! Your order #${order.id} from Rab Razi Restaurant is confirmed and being prepared.`)}
                             className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 text-emerald-400 text-xs font-semibold"
-                            title="Customer ko WhatsApp karein"
+                            title="Contact customer on WhatsApp"
                           >
                             <MessageCircle className="w-3.5 h-3.5" />
                             <span>WhatsApp</span>
@@ -812,7 +812,7 @@ export default function AdminPanel() {
                             className="px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-500 via-amber-500 to-orange-500 hover:from-emerald-400 hover:to-orange-400 text-zinc-950 shadow-lg shadow-orange-950/40 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
                           >
                             <CheckCircle className="w-3.5 h-3.5 stroke-[2.5]" />
-                            <span>Approve & Send to Kitchen (منظور کریں 🍳)</span>
+                            <span>Approve & Send to Kitchen 🍳</span>
                           </button>
                         )}
 
@@ -821,7 +821,7 @@ export default function AdminPanel() {
                             onClick={() => updateOrderStatus(order.id, 'on_the_way')}
                             className="px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-zinc-950 shadow-lg shadow-amber-950/40 transition-all active:scale-95 flex items-center gap-1.5"
                           >
-                            <span>Dispatch Rider (رائیڈر روانہ کریں) 🛵</span>
+                            <span>Dispatch Rider 🛵</span>
                           </button>
                         )}
 
@@ -830,7 +830,7 @@ export default function AdminPanel() {
                             onClick={() => updateOrderStatus(order.id, 'delivered')}
                             className="px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white shadow-lg shadow-emerald-950/40 transition-all active:scale-95 flex items-center gap-1.5"
                           >
-                            <span>Mark as Delivered (مکمل ہو گیا) ✓</span>
+                            <span>Mark as Delivered ✓</span>
                           </button>
                         )}
 
@@ -880,10 +880,10 @@ export default function AdminPanel() {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Bike className="w-5 h-5 text-amber-400" />
-                <h3 className="text-base font-black text-white">Riders & Delivery Fleet (ڈیلیوری بوائز)</h3>
+                <h3 className="text-base font-black text-white">Riders & Delivery Fleet</h3>
               </div>
               <p className="text-xs text-zinc-400">
-                Naye delivery riders shamil karein, unki bike plate note karein aur duty manage karein.
+                Manage your delivery fleet, add new riders, track vehicles, and update shift duty status.
               </p>
             </div>
 
@@ -892,7 +892,7 @@ export default function AdminPanel() {
               className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black px-4 py-2.5 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-950/30 transition-all active:scale-95"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
-              <span>+ Naya Rider Shamil Karein</span>
+              <span>+ Add New Rider</span>
             </button>
           </div>
 
@@ -934,7 +934,7 @@ export default function AdminPanel() {
                         <strong className="text-white font-semibold">{rider.bike}</strong>
                       </div>
                       <div className="flex justify-between text-zinc-400">
-                        <span>Kul Deliveries:</span>
+                        <span>Total Deliveries:</span>
                         <strong className="text-amber-400 font-bold">{rider.totalDeliveries || 0} Orders</strong>
                       </div>
                       <div className="flex justify-between text-zinc-400">
@@ -957,18 +957,18 @@ export default function AdminPanel() {
                           ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/30'
                           : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-white'
                       }`}
-                      title="Duty switch karein"
+                      title="Toggle rider duty status"
                     >
                       <span className={`w-2 h-2 rounded-full ${isOnDelivery ? 'bg-amber-400 animate-ping' : isAvailable ? 'bg-emerald-400' : 'bg-zinc-500'}`} />
-                      <span>{isOnDelivery ? 'On Road (Deliver)' : isAvailable ? '🟢 On Duty (Available)' : '⚪ Off Duty (Chhutti)'}</span>
+                      <span>{isOnDelivery ? 'On Road (Delivering)' : isAvailable ? '🟢 On Duty (Available)' : '⚪ Off Duty'}</span>
                     </button>
 
                     <div className="flex items-center gap-1.5">
                       {/* WhatsApp Rider Button */}
                       <button
-                        onClick={() => openWhatsApp(rider.phone, `Assalam-o-Alaikum ${rider.name}! Rab Razi Restaurant management se delivery update.`)}
+                        onClick={() => openWhatsApp(rider.phone, `Hello ${rider.name}! Delivery update from Rab Razi Restaurant management.`)}
                         className="p-2 rounded-xl bg-zinc-800 hover:bg-emerald-950/60 text-zinc-300 hover:text-emerald-400 transition-all"
-                        title="WhatsApp par rabta karein"
+                        title="Contact rider on WhatsApp"
                       >
                         <MessageCircle className="w-3.5 h-3.5" />
                       </button>
@@ -977,7 +977,7 @@ export default function AdminPanel() {
                       <button
                         onClick={() => openEditRiderModal(rider)}
                         className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all"
-                        title="Rider details edit karein"
+                        title="Edit rider details"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
                       </button>
@@ -985,12 +985,12 @@ export default function AdminPanel() {
                       {/* Delete Rider */}
                       <button
                         onClick={() => {
-                          if (confirm(`Kiya aap waqai rider "${rider.name}" ko remove karna chahte hain?`)) {
+                          if (confirm(`Are you sure you want to remove rider "${rider.name}"?`)) {
                             deleteRider(rider.id);
                           }
                         }}
                         className="p-2 rounded-xl bg-zinc-800 hover:bg-red-950 text-zinc-400 hover:text-red-400 transition-all"
-                        title="Rider ko delete karein"
+                        title="Delete rider"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -1017,7 +1017,7 @@ export default function AdminPanel() {
                 type="text"
                 value={itemSearch}
                 onChange={(e) => setItemSearch(e.target.value)}
-                placeholder="Dish ya deal ka naam likhein..."
+                placeholder="Search dishes or deals by name..."
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
               />
             </div>
@@ -1027,7 +1027,7 @@ export default function AdminPanel() {
               className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black px-4 py-2.5 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-950/30 transition-all active:scale-95"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
-              <span>+ Nayi Dish / Deal Add Karein</span>
+              <span>+ Add New Dish / Deal</span>
             </button>
           </div>
 
@@ -1103,28 +1103,28 @@ export default function AdminPanel() {
                         ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25'
                         : 'bg-red-500/15 border-red-500/30 text-red-400 hover:bg-red-500/25'
                     }`}
-                    title="Dish ko available ya out of stock karein"
+                    title="Toggle item availability"
                   >
-                    {item.inStock ? '✓ Available (دستیاب)' : '✕ Khatam (Out of Stock)'}
+                    {item.inStock ? '✓ In Stock (Available)' : '✕ Out of Stock'}
                   </button>
 
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => openEditItemModal(item)}
                       className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all"
-                      title="Dish details edit karein"
+                      title="Edit dish details"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
                     </button>
 
                     <button
                       onClick={() => {
-                        if (confirm(`Kiya aap dish "${item.name}" ko menu se delete karna chahte hain?`)) {
+                        if (confirm(`Are you sure you want to delete "${item.name}" from the menu?`)) {
                           deleteMenuItem(item.id);
                         }
                       }}
                       className="p-2 rounded-xl bg-zinc-800 hover:bg-red-950 text-zinc-400 hover:text-red-400 transition-all"
-                      title="Dish ko delete karein"
+                      title="Delete dish"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -1148,8 +1148,8 @@ export default function AdminPanel() {
               <div className="flex items-center gap-2">
                 <Store className="w-5 h-5 text-amber-400" />
                 <div>
-                  <h3 className="text-sm font-black text-white">Restaurant Profile & Timings (ریسٹورنٹ پروفائل)</h3>
-                  <p className="text-[11px] text-zinc-400">Naam, pata, rabta aur dukaan khulne band hone ke auqaat</p>
+                  <h3 className="text-sm font-black text-white">Restaurant Profile & Timings</h3>
+                  <p className="text-[11px] text-zinc-400">Restaurant name, contact numbers, address, and operating hours</p>
                 </div>
               </div>
 
@@ -1170,7 +1170,7 @@ export default function AdminPanel() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-zinc-300">Restaurant Name (ریسٹورنٹ کا نام)</label>
+                <label className="font-bold text-zinc-300">Restaurant Name</label>
                 <input
                   type="text"
                   required
@@ -1181,7 +1181,7 @@ export default function AdminPanel() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-zinc-300">Tagline / Slogan (خوشخبری / نعرہ)</label>
+                <label className="font-bold text-zinc-300">Tagline / Slogan</label>
                 <input
                   type="text"
                   value={settingsForm.tagline}
@@ -1191,7 +1191,7 @@ export default function AdminPanel() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-zinc-300">Contact Phone Numbers (رابطہ نمبرز)</label>
+                <label className="font-bold text-zinc-300">Contact Phone Numbers</label>
                 <input
                   type="text"
                   required
@@ -1202,7 +1202,7 @@ export default function AdminPanel() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-zinc-300">Opening Hours (اوقات کار)</label>
+                <label className="font-bold text-zinc-300">Opening Hours</label>
                 <input
                   type="text"
                   value={settingsForm.openingHours}
@@ -1213,7 +1213,7 @@ export default function AdminPanel() {
               </div>
 
               <div className="space-y-1 sm:col-span-2">
-                <label className="font-bold text-zinc-300">Physical Address (مکمل پتہ)</label>
+                <label className="font-bold text-zinc-300">Physical Address</label>
                 <input
                   type="text"
                   value={settingsForm.address}
@@ -1226,7 +1226,7 @@ export default function AdminPanel() {
               <div className="space-y-1 sm:col-span-2">
                 <div className="flex items-center justify-between">
                   <label className="font-bold text-zinc-300 flex items-center gap-1.5">
-                    <span>Google Maps Link (گوگل میپس لوکیشن لنک)</span>
+                    <span>Google Maps Link</span>
                     <span className="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-mono">
                       Plus Code: {settingsForm.plusCode || 'QXQ6+C96'}
                     </span>
@@ -1272,8 +1272,8 @@ export default function AdminPanel() {
             <div className="flex items-center gap-2 pb-3 border-b border-zinc-800">
               <Truck className="w-5 h-5 text-amber-400" />
               <div>
-                <h3 className="text-sm font-black text-white">Delivery Charges & Time Limit (ڈیلیوری چارجز)</h3>
-                <p className="text-[11px] text-zinc-400">Rider delivery fees aur muft delivery limit</p>
+                <h3 className="text-sm font-black text-white">Delivery Charges & Time Limit</h3>
+                <p className="text-[11px] text-zinc-400">Configure delivery fees, free delivery minimum, and estimated arrival time</p>
               </div>
             </div>
 
@@ -1316,14 +1316,14 @@ export default function AdminPanel() {
             <div className="flex items-center gap-2 pb-3 border-b border-zinc-800">
               <Tag className="w-5 h-5 text-amber-400" />
               <div>
-                <h3 className="text-sm font-black text-white">Discounts, Vouchers & Top Announcement (ڈسکاؤنٹ اور نوٹس)</h3>
-                <p className="text-[11px] text-zinc-400">Discount coupon code aur customer app ka top notification banner</p>
+                <h3 className="text-sm font-black text-white">Discounts, Vouchers & Top Announcement</h3>
+                <p className="text-[11px] text-zinc-400">Manage promotional discount codes and top app banner message</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-zinc-300">Active Promo Code (کوپن کوڈ)</label>
+                <label className="font-bold text-zinc-300">Active Promo Code</label>
                 <input
                   type="text"
                   value={settingsForm.promoCode}
@@ -1345,7 +1345,7 @@ export default function AdminPanel() {
               </div>
 
               <div className="space-y-1 sm:col-span-2">
-                <label className="font-bold text-zinc-300">Top Announcement Banner (نوٹس بینر)</label>
+                <label className="font-bold text-zinc-300">Top Announcement Banner</label>
                 <input
                   type="text"
                   value={settingsForm.announcement}
@@ -1364,7 +1364,7 @@ export default function AdminPanel() {
               className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black px-7 py-3.5 rounded-2xl text-xs flex items-center gap-2 shadow-xl shadow-orange-950/40 transition-all active:scale-95 cursor-pointer"
             >
               <Save className="w-4 h-4" />
-              <span>Save Restaurant Settings (تبدیلیاں محفوظ کریں)</span>
+              <span>Save Restaurant Settings</span>
             </button>
           </div>
 
@@ -1381,7 +1381,7 @@ export default function AdminPanel() {
               <div className="flex items-center gap-2">
                 <Bike className="w-4 h-4 text-amber-400" />
                 <h3 className="text-base font-black text-white">
-                  {editingRider ? 'Edit Rider Profile' : 'Add New Delivery Rider (نیا رائیڈر)'}
+                  {editingRider ? 'Edit Rider Profile' : 'Add New Delivery Rider'}
                 </h3>
               </div>
               <button
@@ -1394,7 +1394,7 @@ export default function AdminPanel() {
 
             <form onSubmit={handleSaveRider} className="p-4 sm:p-5 space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-zinc-300">Rider Full Name (رائیڈر کا نام) *</label>
+                <label className="font-bold text-zinc-300">Rider Full Name *</label>
                 <input
                   type="text"
                   required
@@ -1406,7 +1406,7 @@ export default function AdminPanel() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-zinc-300">Mobile Phone Number (موبائل نمبر) *</label>
+                <label className="font-bold text-zinc-300">Mobile Phone Number *</label>
                 <input
                   type="tel"
                   required
@@ -1418,7 +1418,7 @@ export default function AdminPanel() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-zinc-300">Bike Model & Number Plate (موٹرسائیکل نمبر)</label>
+                <label className="font-bold text-zinc-300">Bike Model & License Plate</label>
                 <input
                   type="text"
                   value={riderFormData.bike}
@@ -1429,15 +1429,15 @@ export default function AdminPanel() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-zinc-300">Duty Status (ڈیوٹی کا اسٹیٹس)</label>
+                <label className="font-bold text-zinc-300">Duty Status</label>
                 <select
                   value={riderFormData.status}
                   onChange={(e) => setRiderFormData({ ...riderFormData, status: e.target.value })}
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
                 >
-                  <option value="available">🟢 Available (On Duty - تیار ہے)</option>
-                  <option value="off_duty">⚪ Off Duty (چھٹی پر ہے)</option>
-                  <option value="on_delivery">🛵 On Delivery (آرڈر ڈیلیور کر رہا ہے)</option>
+                  <option value="available">🟢 Available (On Duty)</option>
+                  <option value="off_duty">⚪ Off Duty</option>
+                  <option value="on_delivery">🛵 On Delivery</option>
                 </select>
               </div>
 
@@ -1471,7 +1471,7 @@ export default function AdminPanel() {
             {/* Modal Header */}
             <div className="p-4 sm:p-5 border-b border-zinc-800 flex items-center justify-between bg-zinc-950/80">
               <h3 className="text-base font-black text-white">
-                {editingItem ? 'Edit Menu Dish / Deal' : 'Add New Dish to Menu (نیا کھانا شامل کریں)'}
+                {editingItem ? 'Edit Menu Item' : 'Add New Dish to Menu'}
               </h3>
               <button
                 onClick={() => setIsItemModalOpen(false)}
@@ -1485,7 +1485,7 @@ export default function AdminPanel() {
             <form onSubmit={handleSaveItem} className="p-4 sm:p-5 overflow-y-auto space-y-4 text-xs no-scrollbar">
               
               <div className="space-y-1">
-                <label className="font-bold text-zinc-300">Dish / Deal Name (کھانے کا نام) *</label>
+                <label className="font-bold text-zinc-300">Dish / Deal Name *</label>
                 <input
                   type="text"
                   required
@@ -1498,7 +1498,7 @@ export default function AdminPanel() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="font-bold text-zinc-300">Category (کیٹگری)</label>
+                  <label className="font-bold text-zinc-300">Category</label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -1513,24 +1513,24 @@ export default function AdminPanel() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-zinc-300">Spice Level (مرچ کا لیول)</label>
+                  <label className="font-bold text-zinc-300">Spice Level</label>
                   <select
                     value={formData.spicyLevel}
                     onChange={(e) => setFormData({ ...formData, spicyLevel: e.target.value })}
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
                   >
-                    <option value="Mild">Mild (ہلکی مرچ)</option>
-                    <option value="Medium">Medium (درمیانی)</option>
-                    <option value="Spicy">Spicy (تیز)</option>
-                    <option value="Hot">Hot (ایکسٹرا تیز)</option>
-                    <option value="Sweet">Sweet (میٹھا)</option>
+                    <option value="Mild">Mild</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Spicy">Spicy</option>
+                    <option value="Hot">Extra Hot</option>
+                    <option value="Sweet">Sweet</option>
                   </select>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="font-bold text-zinc-300">Price (قیمت Rs.) *</label>
+                  <label className="font-bold text-zinc-300">Price (Rs.) *</label>
                   <input
                     type="number"
                     required
@@ -1542,7 +1542,7 @@ export default function AdminPanel() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-zinc-300">Original Price (پرانی قیمت Rs.)</label>
+                  <label className="font-bold text-zinc-300">Original Price (Rs.)</label>
                   <input
                     type="number"
                     value={formData.originalPrice}
@@ -1563,7 +1563,7 @@ export default function AdminPanel() {
                   className="rounded text-amber-500 focus:ring-0 w-4 h-4 cursor-pointer"
                 />
                 <label htmlFor="isDealCheckbox" className="font-bold text-white cursor-pointer select-none">
-                  Highlight as Special Deal / Combo (اسپیشل ڈیل بنائیں)
+                  Highlight as Special Deal / Combo
                 </label>
               </div>
 
@@ -1582,7 +1582,7 @@ export default function AdminPanel() {
 
               {/* Image URL & Preset selector */}
               <div className="space-y-1.5">
-                <label className="font-bold text-zinc-300">Food Image URL (تصویر کا لنک)</label>
+                <label className="font-bold text-zinc-300">Food Image URL</label>
                 <input
                   type="url"
                   value={formData.image}
@@ -1592,7 +1592,7 @@ export default function AdminPanel() {
                 />
 
                 <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1">
-                  <span className="text-[10px] text-zinc-500 whitespace-nowrap">تیار تصاویر:</span>
+                  <span className="text-[10px] text-zinc-500 whitespace-nowrap">Presets:</span>
                   {presetImages.map((p, idx) => (
                     <button
                       key={idx}
@@ -1607,7 +1607,7 @@ export default function AdminPanel() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-zinc-300">Tags (ٹیگز e.g. Chef Special, Must Try)</label>
+                <label className="font-bold text-zinc-300">Tags (e.g. Chef Special, Best Seller)</label>
                 <input
                   type="text"
                   value={formData.tags}
@@ -1618,12 +1618,12 @@ export default function AdminPanel() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-zinc-300">Description (تفصیل)</label>
+                <label className="font-bold text-zinc-300">Description</label>
                 <textarea
                   rows={2}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="کھانے کی تفصیل لکھیں..."
+                  placeholder="Enter dish description, ingredients or serving details..."
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
                 />
               </div>
