@@ -24,6 +24,7 @@ import {
   ChevronRight, 
   Sparkles,
   Wifi,
+  BatteryMedium,
   ShieldCheck,
   Bike,
   ChefHat,

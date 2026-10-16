@@ -160,7 +160,7 @@ export default function Header() {
                 <div className="w-5 h-5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-950 font-black text-[10px] flex items-center justify-center">
                   {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : '👤'}
                 </div>
-                <span className="hidden xs:inline truncate max-w-[85px]">{currentUser.name.split(' ')[0]}</span>
+                <span className="hidden xs:inline truncate max-w-[85px]">{(currentUser.name || 'User').split(' ')[0]}</span>
               </button>
             ) : (
               <button

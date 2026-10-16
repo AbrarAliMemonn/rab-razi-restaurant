@@ -6,6 +6,7 @@ import {
   Edit3, 
   DollarSign, 
   ShoppingBag, 
+  MapPin,
   Clock, 
   CheckCircle2, 
   AlertCircle, 
