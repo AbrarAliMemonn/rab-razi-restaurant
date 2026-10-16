@@ -6,8 +6,6 @@ import {
   Navigation, 
   CheckCircle, 
   Radio, 
-  Play, 
-  Square, 
   ArrowLeft, 
   ExternalLink,
   ShieldCheck,
@@ -42,7 +40,6 @@ export default function RiderPortal() {
 
   // GPS Sharing States (Tando Bago: 24.788538, 68.960891)
   const [isGpsSharing, setIsGpsSharing] = useState(false);
-  const [isSimulating, setIsSimulating] = useState(false);
   const [coords, setCoords] = useState({
     lat: 24.788538,
     lng: 68.960891,
@@ -55,7 +52,6 @@ export default function RiderPortal() {
   });
 
   const geoWatchIdRef = useRef(null);
-  const simIntervalRef = useRef(null);
   const broadcastChannelRef = useRef(null);
 
   // Initialize Broadcast Channel
@@ -121,8 +117,8 @@ export default function RiderPortal() {
         broadcastLocation(updated);
       },
       (err) => {
-        console.warn('GPS error, switching to demo simulation mode', err);
-        showToast('Real GPS permission denied or indoor signal weak. Simulation enabled!', 'info');
+        console.warn('GPS error', err);
+        showToast('Please enable device location permission for live GPS broadcasting', 'warning');
       },
       {
         enableHighAccuracy: true,
@@ -141,45 +137,9 @@ export default function RiderPortal() {
     showToast('Real GPS sharing stopped', 'info');
   };
 
-  // Simulated Auto-Ride Movement (Foodpanda style ride demo)
-  const toggleSimulation = () => {
-    if (isSimulating) {
-      clearInterval(simIntervalRef.current);
-      setIsSimulating(false);
-      showToast('Ride simulation paused', 'info');
-    } else {
-      setIsSimulating(true);
-      showToast('Live Ride simulation started! Watch rider move on map 🛵', 'success');
-
-      simIntervalRef.current = setInterval(() => {
-        setCoords((prev) => {
-          const nextProgress = prev.progress >= 98 ? 15 : prev.progress + 4;
-          const distKm = Math.max(0.1, (2.0 * (1 - nextProgress / 100))).toFixed(1);
-          const eta = Math.max(1, Math.round(7 * (1 - nextProgress / 100)));
-          const simulatedSpeed = Math.floor(25 + Math.random() * 15);
-
-          const updated = {
-            lat: 33.7077 + (nextProgress / 100) * 0.012,
-            lng: 73.0498 + (nextProgress / 100) * 0.015,
-            accuracy: 4,
-            speed: simulatedSpeed,
-            progress: nextProgress,
-            distanceRemaining: `${distKm} km`,
-            etaMinutes: eta,
-            lastPing: new Date().toLocaleTimeString()
-          };
-
-          broadcastLocation(updated);
-          return updated;
-        });
-      }, 2000);
-    }
-  };
-
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (simIntervalRef.current) clearInterval(simIntervalRef.current);
       if (geoWatchIdRef.current !== null) navigator.geolocation.clearWatch(geoWatchIdRef.current);
     };
   }, []);
@@ -237,14 +197,14 @@ export default function RiderPortal() {
       <div className="bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-950 border border-amber-500/30 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-800">
           <div className="flex items-center gap-2.5">
-            <div className={`w-3.5 h-3.5 rounded-full ${isGpsSharing || isSimulating ? 'bg-emerald-400 animate-ping' : 'bg-zinc-600'}`} />
+            <div className={`w-3.5 h-3.5 rounded-full ${isGpsSharing ? 'bg-emerald-400 animate-ping' : 'bg-zinc-600'}`} />
             <div>
               <h2 className="text-base font-black text-white flex items-center gap-2">
                 <span>Live GPS Location Broadcast</span>
                 <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${
-                  isGpsSharing || isSimulating ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400'
+                  isGpsSharing ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400'
                 }`}>
-                  {isGpsSharing || isSimulating ? 'Broadcasting Live 🟢' : 'GPS Offline ⚪'}
+                  {isGpsSharing ? 'Broadcasting Live 🟢' : 'GPS Offline ⚪'}
                 </span>
               </h2>
               <p className="text-xs text-zinc-400 mt-0.5">
@@ -307,40 +267,20 @@ export default function RiderPortal() {
           </div>
         </div>
 
-        {/* 2 Main Action Control Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-          
-          {/* Button 1: HTML5 Device Real GPS Broadcast */}
+        {/* Live Device GPS Broadcast Button */}
+        <div className="pt-2">
           <button
             onClick={isGpsSharing ? stopRealGps : startRealGps}
-            className={`py-3.5 px-4 rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-xl transition-all active:scale-95 cursor-pointer ${
+            className={`w-full py-3.5 px-4 rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-xl transition-all active:scale-95 cursor-pointer ${
               isGpsSharing
                 ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-950/50'
                 : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950/50'
             }`}
           >
             <Radio className="w-4 h-4" />
-            <span>{isGpsSharing ? 'Stop Real Device GPS 🛑' : 'Share Real Device GPS (موبائل لوکیشن) 📡'}</span>
+            <span>{isGpsSharing ? 'Stop Real Device GPS 🛑' : 'Share Real Device GPS (موبائل لوکیشن آن کریں) 📡'}</span>
           </button>
-
-          {/* Button 2: Foodpanda Simulated Auto-Drive Demo */}
-          <button
-            onClick={toggleSimulation}
-            className={`py-3.5 px-4 rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-xl transition-all active:scale-95 cursor-pointer ${
-              isSimulating
-                ? 'bg-amber-600 hover:bg-amber-500 text-zinc-950'
-                : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 shadow-orange-950/40'
-            }`}
-          >
-            {isSimulating ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
-            <span>{isSimulating ? 'Pause Ride Demo ⏸️' : 'Start Live Ride Demo (فوڈ پانڈا موومنٹ) 🛵'}</span>
-          </button>
-
         </div>
-
-        <p className="text-[11px] text-zinc-400 text-center leading-relaxed">
-          💡 <strong>Tip:</strong> Button click karne ke baad Customer App khol kar dekhein — Rider ki bike raste par chalti hui nazar aayegi!
-        </p>
       </div>
 
       {/* Active Assigned Order Card */}

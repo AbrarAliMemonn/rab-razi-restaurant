@@ -17,7 +17,6 @@ import {
   Save, 
   Bike, 
   Eye, 
-  Check, 
   Flame, 
   ArrowRight, 
   LogOut, 
@@ -328,13 +327,13 @@ export default function AdminPanel() {
 
           <form onSubmit={handleLoginSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-zinc-300">Admin Username</label>
+              <label className="text-xs font-bold text-zinc-300">Admin Email / Username</label>
               <input
                 type="text"
                 required
                 value={loginUsername}
                 onChange={(e) => setLoginUsername(e.target.value)}
-                placeholder="admin"
+                placeholder="abraralimemon23@gmail.com"
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
               />
             </div>
@@ -346,38 +345,24 @@ export default function AdminPanel() {
                 required
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
-                placeholder="admin123"
+                placeholder="••••••••"
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black py-3.5 rounded-2xl text-xs shadow-lg shadow-orange-950/40 transition-all active:scale-[0.98]"
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black py-3.5 rounded-2xl text-xs shadow-lg shadow-orange-950/40 transition-all active:scale-[0.98] cursor-pointer"
             >
               Log In to Admin Dashboard
             </button>
           </form>
 
-          {/* Quick Demo Fill Credentials */}
           <div className="pt-2 border-t border-zinc-800/80 flex flex-col gap-2">
             <button
               type="button"
-              onClick={() => {
-                setLoginUsername('admin');
-                setLoginPassword('admin123');
-                loginAdmin('admin', 'admin123');
-              }}
-              className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-amber-400 rounded-xl text-xs font-bold border border-zinc-700 transition-all active:scale-95 flex items-center justify-center gap-1.5"
-            >
-              <Check className="w-3.5 h-3.5" />
-              <span>1-Click Demo Login (admin / admin123)</span>
-            </button>
-
-            <button
-              type="button"
               onClick={switchToUser}
-              className="w-full py-2 text-zinc-400 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+              className="w-full py-2 text-zinc-400 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Customer App</span>

@@ -12,13 +12,10 @@ import {
   ShieldCheck,
   Sparkles,
   Receipt,
-  RotateCcw,
   Navigation,
   Radio,
   Gauge,
   Compass,
-  Play,
-  Square,
   ExternalLink,
   Flame,
   AlertCircle,
@@ -41,8 +38,6 @@ export default function OrderTracking() {
   } = useApp();
 
   const [lookupId, setLookupId] = useState('');
-  const [isTestMoving, setIsTestMoving] = useState(false);
-  const testTimerRef = useRef(null);
 
   // Safe settings fallback to prevent any undefined runtime crashes
   const safeSettings = settings || {
@@ -119,60 +114,8 @@ export default function OrderTracking() {
     return 'upcoming';
   };
 
-  // Quick simulate button for user to advance stages
-  const simulateNext = () => {
-    if (!currentOrder) return;
-    const flow = ['pending', 'preparing', 'on_the_way', 'delivered'];
-    const idx = flow.indexOf(currentOrder.status);
-    if (idx < flow.length - 1) {
-      updateOrderStatus(currentOrder.id, flow[idx + 1]);
-    } else {
-      updateOrderStatus(currentOrder.id, 'pending');
-    }
-  };
-
-  // Client-side quick drive tester for Foodpanda GPS simulation
-  const toggleQuickTestDrive = () => {
-    if (isTestMoving) {
-      clearInterval(testTimerRef.current);
-      setIsTestMoving(false);
-      showToast('Live GPS test drive paused', 'info');
-    } else {
-      setIsTestMoving(true);
-      showToast('Simulating live Foodpanda rider movement on map! 🛵💨', 'success');
-
-      testTimerRef.current = setInterval(() => {
-        setRiderLiveLocation((prev) => {
-          const nextProg = (prev?.progress || 20) >= 95 ? 15 : (prev?.progress || 20) + 4;
-          const dist = Math.max(0.1, (2.0 * (1 - nextProg / 100))).toFixed(1);
-          const eta = Math.max(1, Math.round(7 * (1 - nextProg / 100)));
-          const speed = Math.floor(28 + Math.random() * 12);
-
-          const payload = {
-            progress: nextProg,
-            speed,
-            distanceRemaining: `${dist} km`,
-            etaMinutes: eta,
-            accuracy: 4,
-            lastPing: new Date().toLocaleTimeString(),
-            isBroadcasting: true
-          };
-
-          localStorage.setItem('rrr_rider_live_location', JSON.stringify(payload));
-          return payload;
-        });
-      }, 1800);
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      if (testTimerRef.current) clearInterval(testTimerRef.current);
-    };
-  }, []);
-
-  // Compute animated coordinates on simulated map SVG
-  const isRiderOnRoad = currentOrder?.status === 'on_the_way' || isTestMoving;
+  // Compute animated coordinates on live map SVG
+  const isRiderOnRoad = currentOrder?.status === 'on_the_way';
 
   const progressPercent = currentOrder?.status === 'delivered'
     ? 96
@@ -376,8 +319,8 @@ export default function OrderTracking() {
               </div>
             </div>
 
-            {/* Status Live Action Badge & Quick Test Simulator */}
-            <div className="mt-6 pt-4 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            {/* Status Live Action Badge */}
+            <div className="mt-6 pt-4 border-t border-zinc-800 flex items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2 text-zinc-300">
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
@@ -387,16 +330,7 @@ export default function OrderTracking() {
                   Current Pipeline Status: <strong className="text-white capitalize">{currentOrder.status.replace('_', ' ')}</strong>
                 </span>
               </div>
-
-              {/* Demo Stepper button */}
-              <button
-                onClick={simulateNext}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-amber-400 border border-zinc-700 transition-all active:scale-95 text-[11px] font-bold cursor-pointer"
-                title="Advance order status to test live pipeline transition"
-              >
-                <RotateCcw className="w-3 h-3" />
-                <span>Simulate Next Stage</span>
-              </button>
+              <span className="text-[11px] text-zinc-500 font-mono">Live Sync</span>
             </div>
 
           </div>
@@ -451,24 +385,10 @@ export default function OrderTracking() {
                       : 'Order Queued'}
                   </span>
                 </span>
-
-                {/* Test Drive Button on customer map */}
-                <button
-                  onClick={toggleQuickTestDrive}
-                  className={`text-[11px] font-bold px-3 py-1 rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer ${
-                    isTestMoving
-                      ? 'bg-amber-500 text-zinc-950 border-amber-400 font-black'
-                      : 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:text-white'
-                  }`}
-                  title="Test simulate bike moving on the route"
-                >
-                  {isTestMoving ? <Square className="w-3 h-3 fill-current" /> : <Play className="w-3 h-3 fill-current" />}
-                  <span>{isTestMoving ? 'Pause Movement' : 'Test Drive Rider 🛵'}</span>
-                </button>
               </div>
             </div>
 
-            {/* Visual Simulated Map Canvas */}
+            {/* Visual Delivery Map Canvas */}
             <div className="relative h-64 sm:h-72 w-full bg-[#10141d] overflow-hidden flex items-center justify-center p-6 select-none">
               
               {/* Street grid visual texture */}
@@ -482,14 +402,14 @@ export default function OrderTracking() {
               </div>
 
               {/* Status Banner Overlay when in Kitchen / Pending */}
-              {currentOrder.status === 'pending' && !isTestMoving && (
+              {currentOrder.status === 'pending' && (
                 <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-zinc-950/90 border border-amber-500/50 backdrop-blur-md px-3.5 py-1.5 rounded-2xl shadow-xl flex items-center gap-2 text-xs text-amber-300 pointer-events-none">
                   <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                   <span className="font-bold">Order Received • Waiting for Admin Approval ⏳</span>
                 </div>
               )}
 
-              {currentOrder.status === 'preparing' && !isTestMoving && (
+              {currentOrder.status === 'preparing' && (
                 <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-zinc-950/90 border border-orange-500/50 backdrop-blur-md px-3.5 py-1.5 rounded-2xl shadow-xl flex items-center gap-2 text-xs text-orange-300 pointer-events-none">
                   <span className="w-2 h-2 rounded-full bg-orange-400 animate-ping" />
                   <span className="font-bold">Admin Approved! Taaza Cooking in Kitchen 🍳</span>

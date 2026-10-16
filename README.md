@@ -46,9 +46,7 @@ rab-razi-restaurant/
 Users can create and manage their personal accounts just like on Foodpanda:
 * **User Sign Up:** Full Name, Mobile Phone Number, Email, Password, and Delivery Address in Tando Bago.
 * **User Log In:** Sign in using Email or Phone Number with JWT token-based authentication.
-* **Quick Demo Logins (1-Click):**
-  * 👤 **Demo Customer:** `customer@rabrazi.com` / `customer123`
-  * 👑 **Demo Admin:** `admin@rabrazi.com` / `admin123`
+* **Dedicated Administrator:** Reserved strictly for `abraralimemon23@gmail.com` with auto-assigned Admin privileges.
 * **User Profile & Saved Addresses:**
   * Manage multiple delivery locations (Home, Office, Shop).
   * Automatically pre-fills delivery details at checkout for 1-click ordering.
@@ -69,7 +67,6 @@ Users can create and manage their personal accounts just like on Foodpanda:
 
 ### 2. 🛵 Foodpanda-Style Live Rider GPS Tracking (`#rider` & `Track Tab`)
 * **Real Device GPS Sharing:** HTML5 Geolocation API (`watchPosition`) transmitting live rider coordinates.
-* **Live Road Movement Animation:** 1-click test drive simulation showing the rider's bike navigating the route in real-time.
 * **Interactive SVG Route Map:** Dynamic distance remaining, live speed (km/h), and dynamic ETA countdown.
 * **Contextual Stages:** Distinct UI & map states for `Pending Approval`, `Approved & Cooking in Kitchen`, `Out for Delivery`, and `Delivered`.
 
