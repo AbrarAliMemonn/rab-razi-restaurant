@@ -313,8 +313,8 @@ export default function AdminPanel() {
   // =========================================================================
   if (!isAdminAuthenticated) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+      <div className="min-h-[80vh] flex items-center justify-center p-3 sm:p-4">
+        <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-2xl space-y-5 sm:space-y-6">
           <div className="text-center space-y-2">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center mx-auto text-3xl shadow-xl shadow-orange-950/50">
               🛡️
@@ -377,19 +377,19 @@ export default function AdminPanel() {
   // MAIN ADMIN DASHBOARD
   // =========================================================================
   return (
-    <div className="max-w-6xl mx-auto space-y-5 pb-20 animate-in fade-in duration-300">
+    <div className="max-w-6xl mx-auto space-y-4 sm:space-y-5 pb-20 animate-in fade-in duration-300 px-0.5 sm:px-0">
       
       {/* 1. TOP HERO OPERATIONS BAR */}
-      <div className="bg-gradient-to-r from-zinc-900 via-zinc-900 to-zinc-950 border border-zinc-800/90 p-4 sm:p-5 rounded-3xl shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-zinc-900 via-zinc-900 to-zinc-950 border border-zinc-800/90 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         
         {/* Restaurant Identity & Open/Close Switch */}
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-red-600 text-white flex items-center justify-center text-2xl shadow-lg shadow-orange-950/40 flex-shrink-0">
+        <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-500 to-red-600 text-white flex items-center justify-center text-xl sm:text-2xl shadow-lg shadow-orange-950/40 flex-shrink-0">
             🍗
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-lg sm:text-xl font-black text-white">
+              <h1 className="text-base sm:text-xl font-black text-white truncate">
                 {settings.restaurantName}
               </h1>
               
@@ -397,7 +397,7 @@ export default function AdminPanel() {
               <button
                 type="button"
                 onClick={toggleStoreStatus}
-                className={`text-xs font-black px-3 py-1 rounded-full border transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 ${
+                className={`text-[11px] sm:text-xs font-black px-2.5 sm:px-3 py-1 rounded-full border transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 whitespace-nowrap ${
                   settingsForm.isOpen
                     ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/30'
                     : 'bg-red-500/20 text-red-400 border-red-500/40 hover:bg-red-500/30'
@@ -409,7 +409,7 @@ export default function AdminPanel() {
               </button>
             </div>
             
-            <p className="text-xs text-zinc-400 mt-0.5 flex items-center gap-1.5">
+            <p className="text-[11px] sm:text-xs text-zinc-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
               <span>Admin Management Hub</span>
               <span className="text-zinc-600">•</span>
               <span className="text-amber-400/90 font-medium">{settings.phone}</span>
@@ -418,11 +418,11 @@ export default function AdminPanel() {
         </div>
 
         {/* Quick Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full md:w-auto">
           {/* Quick Add Buttons */}
           <button
             onClick={openAddItemModal}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md transition-all active:scale-95"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md transition-all active:scale-95 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5 stroke-[3]" />
             <span>Add New Dish</span>
@@ -430,7 +430,7 @@ export default function AdminPanel() {
 
           <button
             onClick={openAddRiderModal}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-zinc-700 transition-all active:scale-95"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-zinc-700 transition-all active:scale-95 cursor-pointer"
           >
             <Bike className="w-3.5 h-3.5" />
             <span>Add New Rider</span>
@@ -439,38 +439,39 @@ export default function AdminPanel() {
           {/* Switch to Rider Portal */}
           <button
             onClick={switchToRider}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-amber-400 border border-amber-500/30 transition-all active:scale-95"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-amber-400 border border-amber-500/30 transition-all active:scale-95 cursor-pointer"
             title="Open Rider GPS tracking portal"
           >
             <Bike className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden sm:inline">Rider GPS App</span>
+            <span>Rider GPS</span>
           </button>
 
           {/* Switch to Customer App */}
           <button
             onClick={switchToUser}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700/80 transition-all active:scale-95"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700/80 transition-all active:scale-95 cursor-pointer"
             title="View Customer App"
           >
             <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="hidden sm:inline">Customer App</span>
+            <span>Customer App</span>
           </button>
 
           {/* Logout */}
           <button
             onClick={logoutAdmin}
-            className="p-2 rounded-xl bg-zinc-900 hover:bg-red-950/60 text-zinc-400 hover:text-red-400 border border-zinc-800 transition-all active:scale-95"
+            className="col-span-2 sm:col-span-1 p-2 rounded-xl bg-zinc-900 hover:bg-red-950/60 text-zinc-400 hover:text-red-400 border border-zinc-800 transition-all active:scale-95 flex items-center justify-center gap-1.5 text-xs font-bold cursor-pointer"
             title="Log out of Admin session"
           >
             <LogOut className="w-4 h-4" />
+            <span className="sm:hidden">Log Out</span>
           </button>
         </div>
       </div>
 
       {/* 2. STATS OVERVIEW CARDS (Big, Clean, Informative) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
         {/* Total Revenue */}
-        <div className="bg-zinc-900/90 border border-zinc-800/80 p-4 rounded-3xl space-y-1 hover:border-amber-500/40 transition-all">
+        <div className="bg-zinc-900/90 border border-zinc-800/80 p-3 sm:p-4 rounded-2xl sm:rounded-3xl space-y-1 hover:border-amber-500/40 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
               Total Revenue
@@ -479,7 +480,7 @@ export default function AdminPanel() {
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-amber-400 font-mono">
+          <div className="text-lg sm:text-2xl font-black text-amber-400 font-mono">
             Rs. {totalRevenue.toLocaleString()}
           </div>
           <span className="text-[10px] text-zinc-500 block">From delivered orders</span>
@@ -488,7 +489,7 @@ export default function AdminPanel() {
         {/* Active Live Orders */}
         <div 
           onClick={() => { setActiveAdminTab('orders'); setOrderFilter('all'); }}
-          className="bg-zinc-900/90 border border-zinc-800/80 p-4 rounded-3xl space-y-1 hover:border-orange-500/40 transition-all cursor-pointer group"
+          className="bg-zinc-900/90 border border-zinc-800/80 p-3 sm:p-4 rounded-2xl sm:rounded-3xl space-y-1 hover:border-orange-500/40 transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 group-hover:text-orange-400">
@@ -498,7 +499,7 @@ export default function AdminPanel() {
               <ShoppingBag className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-orange-400 font-mono">
+          <div className="text-lg sm:text-2xl font-black text-orange-400 font-mono">
             {activeOrdersCount} Orders
           </div>
           <span className="text-[10px] text-zinc-500 block">
@@ -509,7 +510,7 @@ export default function AdminPanel() {
         {/* Riders Fleet */}
         <div 
           onClick={() => setActiveAdminTab('riders')}
-          className="bg-zinc-900/90 border border-zinc-800/80 p-4 rounded-3xl space-y-1 hover:border-emerald-500/40 transition-all cursor-pointer group"
+          className="bg-zinc-900/90 border border-zinc-800/80 p-3 sm:p-4 rounded-2xl sm:rounded-3xl space-y-1 hover:border-emerald-500/40 transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 group-hover:text-emerald-400">
@@ -519,7 +520,7 @@ export default function AdminPanel() {
               <Bike className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-emerald-400 font-mono">
+          <div className="text-lg sm:text-2xl font-black text-emerald-400 font-mono">
             {riders.length} Riders
           </div>
           <span className="text-[10px] text-zinc-500 block">
@@ -530,7 +531,7 @@ export default function AdminPanel() {
         {/* Menu Items */}
         <div 
           onClick={() => setActiveAdminTab('items')}
-          className="bg-zinc-900/90 border border-zinc-800/80 p-4 rounded-3xl space-y-1 hover:border-blue-500/40 transition-all cursor-pointer group"
+          className="bg-zinc-900/90 border border-zinc-800/80 p-3 sm:p-4 rounded-2xl sm:rounded-3xl space-y-1 hover:border-blue-500/40 transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 group-hover:text-blue-400">
@@ -540,7 +541,7 @@ export default function AdminPanel() {
               <Utensils className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-zinc-100 font-mono">
+          <div className="text-lg sm:text-2xl font-black text-zinc-100 font-mono">
             {menuItems.length} Dishes
           </div>
           <span className="text-[10px] text-zinc-500 block">
@@ -550,7 +551,7 @@ export default function AdminPanel() {
       </div>
 
       {/* 3. USER-FRIENDLY TABS WITH EMOJIS & BADGES */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-zinc-900/80 p-1.5 rounded-2xl border border-zinc-800">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 bg-zinc-900/80 p-1 sm:p-1.5 rounded-2xl border border-zinc-800">
         {[
           { id: 'orders', label: 'Live Orders', subtitle: 'Customer Orders', icon: '📋', count: orders.length, activeBadge: pendingOrdersCount > 0 ? `${pendingOrdersCount} New` : null },
           { id: 'riders', label: 'Delivery Riders', subtitle: 'Fleet & Drivers', icon: '🛵', count: riders.length },
@@ -562,7 +563,7 @@ export default function AdminPanel() {
             <button
               key={tab.id}
               onClick={() => setActiveAdminTab(tab.id)}
-              className={`flex flex-col items-center justify-center py-2.5 px-3 rounded-xl transition-all relative cursor-pointer ${
+              className={`flex flex-col items-center justify-center py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl transition-all relative cursor-pointer ${
                 isActive
                   ? 'bg-amber-500 text-zinc-950 font-black shadow-md scale-[1.02]'
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
@@ -570,14 +571,14 @@ export default function AdminPanel() {
             >
               <div className="flex items-center gap-1.5">
                 <span className="text-base">{tab.icon}</span>
-                <span className="text-xs font-black">{tab.label}</span>
+                <span className="text-[11px] sm:text-xs font-black truncate">{tab.label}</span>
                 {tab.count !== undefined && (
                   <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${isActive ? 'bg-zinc-950/20 text-zinc-950' : 'bg-zinc-800 text-zinc-400'}`}>
                     {tab.count}
                   </span>
                 )}
               </div>
-              <span className={`text-[9px] mt-0.5 ${isActive ? 'text-zinc-950/80 font-bold' : 'text-zinc-500'}`}>
+              <span className={`text-[8px] sm:text-[9px] mt-0.5 truncate ${isActive ? 'text-zinc-950/80 font-bold' : 'text-zinc-500'}`}>
                 {tab.subtitle}
               </span>
 
@@ -599,7 +600,7 @@ export default function AdminPanel() {
         <div className="space-y-4">
           
           {/* Friendly Filters Row */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-900/60 p-3 rounded-2xl border border-zinc-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 bg-zinc-900/60 p-2.5 sm:p-3 rounded-2xl border border-zinc-800">
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
               {[
                 { id: 'all', label: 'All Orders', count: orders.length, color: 'zinc' },
@@ -650,7 +651,7 @@ export default function AdminPanel() {
                 return (
                   <div
                     key={order.id}
-                    className="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 sm:p-5 space-y-4 hover:border-zinc-700 transition-all shadow-xl"
+                    className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 space-y-3.5 sm:space-y-4 hover:border-zinc-700 transition-all shadow-xl"
                   >
                     {/* Top Row: Order ID, Type, Badges */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-zinc-800/80">
@@ -682,10 +683,10 @@ export default function AdminPanel() {
                       </div>
 
                       {/* Total Amount & Track Preview */}
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <span className="text-xs text-zinc-400 block font-medium">Total Amount:</span>
-                          <span className="text-base font-black text-amber-400 font-mono">
+                      <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-0 border-zinc-800/60">
+                        <div className="text-left sm:text-right">
+                          <span className="text-[10px] sm:text-xs text-zinc-400 block font-medium">Total Amount:</span>
+                          <span className="text-sm sm:text-base font-black text-amber-400 font-mono">
                             Rs. {order.total?.toLocaleString()}
                           </span>
                         </div>
@@ -697,7 +698,7 @@ export default function AdminPanel() {
                             switchToUser();
                             setCurrentTab('tracking');
                           }}
-                          className="text-xs text-amber-400 hover:text-amber-300 font-bold px-3 py-1.5 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center gap-1.5 transition-all shadow-sm"
+                          className="text-xs text-amber-400 hover:text-amber-300 font-bold px-2.5 sm:px-3 py-1.5 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
                           title="View live tracking map for this order"
                         >
                           <Eye className="w-3.5 h-3.5" />
@@ -733,16 +734,16 @@ export default function AdminPanel() {
                         <div className="flex items-center gap-2 pt-1">
                           <a
                             href={`tel:${order.customerPhone}`}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 font-bold text-xs transition-all"
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 font-bold text-xs transition-all"
                           >
                             <Phone className="w-3 h-3" />
-                            <span>Call: {order.customerPhone}</span>
+                            <span className="truncate">Call: {order.customerPhone}</span>
                           </a>
 
                           <button
                             type="button"
                             onClick={() => openWhatsApp(order.customerPhone, `Hello ${order.customerName}! Your order #${order.id} from Rab Razi Restaurant is confirmed and being prepared.`)}
-                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 text-emerald-400 text-xs font-semibold"
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 text-emerald-400 text-xs font-semibold cursor-pointer"
                             title="Contact customer on WhatsApp"
                           >
                             <MessageCircle className="w-3.5 h-3.5" />
@@ -779,12 +780,12 @@ export default function AdminPanel() {
                     </div>
 
                     {/* Bottom Row: Rider Assignment & 1-Click Status Progression */}
-                    <div className="pt-3 border-t border-zinc-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
+                    <div className="pt-3 border-t border-zinc-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
                       
                       {/* Rider Dropdown Selector */}
                       <div className="flex items-center gap-2 w-full md:w-auto">
                         <Bike className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                        <span className="text-zinc-400 font-bold whitespace-nowrap">Assigned Rider:</span>
+                        <span className="text-zinc-400 font-bold whitespace-nowrap text-[11px] sm:text-xs">Rider:</span>
                         <select
                           value={riders.find((r) => r.name === order.riderName)?.id || ''}
                           onChange={(e) => {
@@ -792,7 +793,7 @@ export default function AdminPanel() {
                               assignRiderToOrder(order.id, e.target.value);
                             }
                           }}
-                          className="bg-zinc-950 border border-zinc-700 text-white rounded-xl px-3 py-1.5 text-xs outline-none focus:border-amber-500 font-semibold max-w-[220px]"
+                          className="bg-zinc-950 border border-zinc-700 text-white rounded-xl px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs outline-none focus:border-amber-500 font-semibold flex-1 sm:flex-initial sm:max-w-[220px]"
                         >
                           <option value="">{order.riderName || 'Choose Delivery Rider...'}</option>
                           {riders.map((r) => (
@@ -804,12 +805,12 @@ export default function AdminPanel() {
                       </div>
 
                       {/* Primary Next Action Button + Quick Status Buttons */}
-                      <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full md:w-auto justify-end">
                         {/* Big recommended next step button based on current status */}
                         {isPending && (
                           <button
                             onClick={() => updateOrderStatus(order.id, 'preparing')}
-                            className="px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-500 via-amber-500 to-orange-500 hover:from-emerald-400 hover:to-orange-400 text-zinc-950 shadow-lg shadow-orange-950/40 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                            className="w-full sm:w-auto justify-center px-4 py-2.5 sm:py-2 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-500 via-amber-500 to-orange-500 hover:from-emerald-400 hover:to-orange-400 text-zinc-950 shadow-lg shadow-orange-950/40 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
                           >
                             <CheckCircle className="w-3.5 h-3.5 stroke-[2.5]" />
                             <span>Approve & Send to Kitchen 🍳</span>
@@ -819,7 +820,7 @@ export default function AdminPanel() {
                         {isPreparing && (
                           <button
                             onClick={() => updateOrderStatus(order.id, 'on_the_way')}
-                            className="px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-zinc-950 shadow-lg shadow-amber-950/40 transition-all active:scale-95 flex items-center gap-1.5"
+                            className="w-full sm:w-auto justify-center px-4 py-2.5 sm:py-2 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-zinc-950 shadow-lg shadow-amber-950/40 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
                           >
                             <span>Dispatch Rider 🛵</span>
                           </button>
@@ -828,31 +829,31 @@ export default function AdminPanel() {
                         {isOnTheWay && (
                           <button
                             onClick={() => updateOrderStatus(order.id, 'delivered')}
-                            className="px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white shadow-lg shadow-emerald-950/40 transition-all active:scale-95 flex items-center gap-1.5"
+                            className="w-full sm:w-auto justify-center px-4 py-2.5 sm:py-2 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white shadow-lg shadow-emerald-950/40 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
                           >
                             <span>Mark as Delivered ✓</span>
                           </button>
                         )}
 
                         {isDelivered && (
-                          <span className="text-emerald-400 font-extrabold text-xs flex items-center gap-1 bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">
+                          <span className="w-full sm:w-auto justify-center text-emerald-400 font-extrabold text-xs flex items-center gap-1 bg-emerald-500/10 px-3 py-2 rounded-xl border border-emerald-500/20">
                             <CheckCircle className="w-3.5 h-3.5" />
                             <span>Order Successfully Delivered</span>
                           </span>
                         )}
 
-                        {/* Dropdown / Extra options */}
-                        <div className="flex items-center gap-1">
+                        {/* Extra status options */}
+                        <div className="flex items-center gap-1.5 justify-end w-full sm:w-auto">
                           <button
                             onClick={() => updateOrderStatus(order.id, 'pending')}
-                            className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold ${isPending ? 'bg-blue-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-white'}`}
+                            className={`flex-1 sm:flex-initial text-center px-2.5 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer ${isPending ? 'bg-blue-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-white'}`}
                             title="Reset to Pending"
                           >
                             Pending
                           </button>
                           <button
                             onClick={() => updateOrderStatus(order.id, 'cancelled')}
-                            className="px-2.5 py-1.5 rounded-xl text-[11px] font-bold bg-zinc-800 text-zinc-400 hover:text-red-400"
+                            className="flex-1 sm:flex-initial text-center px-2.5 py-1.5 rounded-xl text-[11px] font-bold bg-zinc-800 text-zinc-400 hover:text-red-400 cursor-pointer"
                             title="Cancel Order"
                           >
                             Cancel
@@ -876,7 +877,7 @@ export default function AdminPanel() {
         <div className="space-y-4">
           
           {/* Header Action Banner */}
-          <div className="bg-zinc-900 p-4 sm:p-5 rounded-3xl border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
+          <div className="bg-zinc-900 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 shadow-lg">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Bike className="w-5 h-5 text-amber-400" />
@@ -889,7 +890,7 @@ export default function AdminPanel() {
 
             <button
               onClick={openAddRiderModal}
-              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black px-4 py-2.5 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-950/30 transition-all active:scale-95"
+              className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black px-4 py-2.5 rounded-xl sm:rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-950/30 transition-all active:scale-95 cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               <span>+ Add New Rider</span>
@@ -905,7 +906,7 @@ export default function AdminPanel() {
               return (
                 <div
                   key={rider.id}
-                  className="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 sm:p-5 space-y-4 hover:border-zinc-700 transition-all shadow-md flex flex-col justify-between"
+                  className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 space-y-3.5 sm:space-y-4 hover:border-zinc-700 transition-all shadow-md flex flex-col justify-between"
                 >
                   <div className="space-y-3">
                     {/* Rider Avatar & Phone */}
@@ -1010,7 +1011,7 @@ export default function AdminPanel() {
         <div className="space-y-4">
           
           {/* Top Search & Add Button Bar */}
-          <div className="bg-zinc-900 p-4 rounded-3xl border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+          <div className="bg-zinc-900 p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
             <div className="relative w-full sm:w-80">
               <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
@@ -1024,7 +1025,7 @@ export default function AdminPanel() {
 
             <button
               onClick={openAddItemModal}
-              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black px-4 py-2.5 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-950/30 transition-all active:scale-95"
+              className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black px-4 py-2.5 rounded-xl sm:rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-950/30 transition-all active:scale-95 cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               <span>+ Add New Dish / Deal</span>
@@ -1053,7 +1054,7 @@ export default function AdminPanel() {
             {filteredMenuItems.map((item) => (
               <div
                 key={item.id}
-                className="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 space-y-3 flex flex-col justify-between hover:border-zinc-700 transition-all shadow-md"
+                className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-3 sm:p-4 space-y-3 flex flex-col justify-between hover:border-zinc-700 transition-all shadow-md"
               >
                 <div className="flex gap-3">
                   <img
@@ -1143,7 +1144,7 @@ export default function AdminPanel() {
         <form onSubmit={handleSaveSettings} className="space-y-5 animate-in fade-in duration-200">
           
           {/* Card 1: Restaurant Profile & Timings */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-lg">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-4 shadow-lg">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
               <div className="flex items-center gap-2">
                 <Store className="w-5 h-5 text-amber-400" />
@@ -1242,7 +1243,7 @@ export default function AdminPanel() {
                     </a>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="url"
                     value={settingsForm.googleMapsUrl || ''}
@@ -1254,7 +1255,7 @@ export default function AdminPanel() {
                     href={settingsForm.googleMapsUrl || 'https://maps.app.goo.gl/j9TWCvYC6UaRACuf8'}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-amber-400 font-bold rounded-xl text-xs flex items-center gap-1 border border-zinc-700 whitespace-nowrap active:scale-95 transition-all"
+                    className="w-full sm:w-auto justify-center px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-amber-400 font-bold rounded-xl text-xs flex items-center gap-1 border border-zinc-700 whitespace-nowrap active:scale-95 transition-all cursor-pointer"
                   >
                     <MapPin className="w-3.5 h-3.5 text-amber-400" />
                     <span>Open Map</span>
@@ -1268,7 +1269,7 @@ export default function AdminPanel() {
           </div>
 
           {/* Card 2: Delivery & Charges */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-lg">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-4 shadow-lg">
             <div className="flex items-center gap-2 pb-3 border-b border-zinc-800">
               <Truck className="w-5 h-5 text-amber-400" />
               <div>
@@ -1312,7 +1313,7 @@ export default function AdminPanel() {
           </div>
 
           {/* Card 3: Promo Codes & Announcement Banner */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-lg">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-4 shadow-lg">
             <div className="flex items-center gap-2 pb-3 border-b border-zinc-800">
               <Tag className="w-5 h-5 text-amber-400" />
               <div>
@@ -1361,7 +1362,7 @@ export default function AdminPanel() {
           <div className="flex items-center justify-end pt-2">
             <button
               type="submit"
-              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black px-7 py-3.5 rounded-2xl text-xs flex items-center gap-2 shadow-xl shadow-orange-950/40 transition-all active:scale-95 cursor-pointer"
+              className="w-full sm:w-auto justify-center bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black px-7 py-3.5 rounded-2xl text-xs flex items-center gap-2 shadow-xl shadow-orange-950/40 transition-all active:scale-95 cursor-pointer"
             >
               <Save className="w-4 h-4" />
               <span>Save Restaurant Settings</span>
@@ -1376,7 +1377,7 @@ export default function AdminPanel() {
       {/* ===================================================================== */}
       {isRiderModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+          <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[94vh]">
             <div className="p-4 sm:p-5 border-b border-zinc-800 flex items-center justify-between bg-zinc-950/80">
               <div className="flex items-center gap-2">
                 <Bike className="w-4 h-4 text-amber-400" />
@@ -1441,17 +1442,17 @@ export default function AdminPanel() {
                 </select>
               </div>
 
-              <div className="pt-3 border-t border-zinc-800 flex justify-end gap-2">
+              <div className="pt-3 border-t border-zinc-800 flex gap-2 w-full justify-end">
                 <button
                   type="button"
                   onClick={() => setIsRiderModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-zinc-800 text-zinc-300 hover:text-white"
+                  className="flex-1 sm:flex-none justify-center px-4 py-2.5 sm:py-2 rounded-xl bg-zinc-800 text-zinc-300 hover:text-white cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black shadow-md cursor-pointer"
+                  className="flex-1 sm:flex-none justify-center px-5 py-2.5 sm:py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black shadow-md cursor-pointer"
                 >
                   {editingRider ? 'Save Changes' : 'Register Rider'}
                 </button>
@@ -1466,7 +1467,7 @@ export default function AdminPanel() {
       {/* ===================================================================== */}
       {isItemModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-xs">
-          <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+          <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[94vh]">
             
             {/* Modal Header */}
             <div className="p-4 sm:p-5 border-b border-zinc-800 flex items-center justify-between bg-zinc-950/80">
@@ -1628,18 +1629,18 @@ export default function AdminPanel() {
                 />
               </div>
 
-              <div className="pt-3 border-t border-zinc-800 flex justify-end gap-2">
+              <div className="pt-3 border-t border-zinc-800 flex gap-2 w-full justify-end">
                 <button
                   type="button"
                   onClick={() => setIsItemModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-zinc-800 text-zinc-300 hover:text-white"
+                  className="flex-1 sm:flex-none justify-center px-4 py-2.5 sm:py-2 rounded-xl bg-zinc-800 text-zinc-300 hover:text-white cursor-pointer"
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black shadow-md cursor-pointer"
+                  className="flex-1 sm:flex-none justify-center px-5 py-2.5 sm:py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black shadow-md cursor-pointer"
                 >
                   {editingItem ? 'Update Dish' : 'Add to Menu'}
                 </button>

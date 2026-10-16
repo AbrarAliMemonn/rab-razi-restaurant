@@ -63,16 +63,16 @@ export default function Header() {
                   RESTAURANT
                 </span>
               </div>
-              <p className="text-[10px] sm:text-[11px] text-zinc-400 font-medium tracking-wide flex items-center gap-1">
-                <span>رب راضی ریسٹورنٹ</span>
-                <span className="text-zinc-600">•</span>
+              <p className="text-[10px] sm:text-[11px] text-zinc-400 font-medium tracking-wide flex items-center gap-1 flex-wrap">
+                <span className="hidden xs:inline">رب راضی ریسٹورنٹ</span>
+                <span className="text-zinc-600 hidden xs:inline">•</span>
                 <a
                   href={settings.googleMapsUrl || 'https://maps.app.goo.gl/j9TWCvYC6UaRACuf8'}
                   target="_blank"
                   rel="noreferrer"
                   onClick={(e) => e.stopPropagation()}
                   className="text-amber-400/90 hover:text-amber-300 hover:underline flex items-center gap-0.5"
-                  title="Google Maps par restaurant location open karein"
+                  title="Google Maps location"
                 >
                   <MapPin className="w-2.5 h-2.5" />
                   <span>Tando Bago 📍</span>

@@ -66,41 +66,43 @@ function MainLayout() {
       <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-amber-500 selection:text-black">
         {/* Dedicated Admin Header */}
         <header className="border-b border-zinc-800 bg-zinc-900/95 sticky top-0 z-40 backdrop-blur-md shadow-md">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
             <div 
               onClick={switchToUser}
-              className="flex items-center gap-2.5 cursor-pointer select-none group"
+              className="flex items-center gap-2 sm:gap-2.5 cursor-pointer select-none group min-w-0"
             >
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-red-600 flex items-center justify-center text-xl font-black text-white shadow-md">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-amber-500 to-red-600 flex items-center justify-center text-lg sm:text-xl font-black text-white shadow-md flex-shrink-0">
                 🍗
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-black text-white text-base group-hover:text-amber-400 transition-colors">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="font-black text-white text-sm sm:text-base group-hover:text-amber-400 transition-colors truncate">
                     Rab Razi Restaurant
                   </span>
-                  <span className="bg-red-500/20 text-red-400 border border-red-500/40 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
-                    Admin Portal
+                  <span className="bg-red-500/20 text-red-400 border border-red-500/40 text-[9px] sm:text-[10px] font-black px-1.5 sm:px-2 py-0.5 rounded-full uppercase whitespace-nowrap">
+                    Admin
                   </span>
                 </div>
-                <p className="text-[10px] text-zinc-400 font-medium">Operations, Items Listing & Orders Queue</p>
+                <p className="text-[10px] text-zinc-400 font-medium hidden sm:block">Operations, Items Listing & Orders Queue</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
               <button
                 onClick={switchToRider}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-zinc-700 transition-all active:scale-95"
+                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-zinc-700 transition-all active:scale-95"
+                title="Rider GPS Mode"
               >
                 <Bike className="w-3.5 h-3.5" />
-                <span>Rider GPS Mode</span>
+                <span className="hidden sm:inline">Rider GPS Mode</span>
               </button>
 
               <button
                 onClick={switchToUser}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md transition-all active:scale-95"
+                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md transition-all active:scale-95"
               >
-                <span>Customer App</span>
+                <span className="hidden xs:inline sm:inline">Customer App</span>
+                <span className="xs:hidden">App</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -108,7 +110,7 @@ function MainLayout() {
         </header>
 
         {/* Admin Main Body */}
-        <main className="max-w-7xl mx-auto px-3 sm:px-6 py-6">
+        <main className="max-w-7xl mx-auto px-2.5 sm:px-6 py-4 sm:py-6">
           <AdminPanel />
         </main>
 

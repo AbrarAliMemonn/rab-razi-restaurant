@@ -178,7 +178,7 @@ export default function RiderPortal() {
       {/* Select Active Rider Profile */}
       <div className="bg-zinc-900/90 border border-zinc-800 p-4 rounded-3xl space-y-2">
         <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
-          Select Logged-In Delivery Rider (رائیڈر سلیکٹ کریں)
+          Select Logged-In Delivery Rider
         </label>
         <select
           value={selectedRiderId}
@@ -208,7 +208,7 @@ export default function RiderPortal() {
                 </span>
               </h2>
               <p className="text-xs text-zinc-400 mt-0.5">
-                Foodpanda ki tarah gahak ko live map par aapki bike chalti nazar aayegi
+                Customers can watch your bike moving live on the map in real-time
               </p>
             </div>
           </div>
@@ -278,7 +278,7 @@ export default function RiderPortal() {
             }`}
           >
             <Radio className="w-4 h-4" />
-            <span>{isGpsSharing ? 'Stop Real Device GPS 🛑' : 'Share Real Device GPS (موبائل لوکیشن آن کریں) 📡'}</span>
+            <span>{isGpsSharing ? 'Stop Real Device GPS 🛑' : 'Share Real Device GPS 📡'}</span>
           </button>
         </div>
       </div>
@@ -361,7 +361,7 @@ export default function RiderPortal() {
               className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition-all active:scale-95"
             >
               <CheckCircle className="w-3.5 h-3.5" />
-              <span>Mark as Delivered (ڈیلیوری ہو گئی) ✓</span>
+              <span>Mark as Delivered ✓</span>
             </button>
           </div>
         </div>
