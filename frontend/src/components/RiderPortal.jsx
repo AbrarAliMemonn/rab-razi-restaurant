@@ -367,6 +367,12 @@ export default function RiderPortal() {
         </div>
       )}
 
+      {!currentOrder && (
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 text-center text-zinc-400 text-xs">
+          <p className="font-bold text-white text-sm mb-1">No Active Orders Assigned 🛵</p>
+          <p>Orders will appear here once dispatched from the kitchen or assigned to this rider.</p>
+        </div>
+      )}
     </div>
   );
 }

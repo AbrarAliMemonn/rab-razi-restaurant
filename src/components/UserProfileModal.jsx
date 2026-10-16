@@ -35,9 +35,12 @@ export default function UserProfileModal() {
 
   if (!isProfileModalOpen || !currentUser) return null;
 
-  // Filter orders for this user
+  // Filter orders strictly for this user
   const userOrders = orders.filter(
-    (o) => o.userId === currentUser.id || o.customerPhone === currentUser.phone || o.customerName === currentUser.name
+    (o) =>
+      (o.userId && o.userId === currentUser.id) ||
+      (o.customerEmail && currentUser.email && o.customerEmail.toLowerCase() === currentUser.email.toLowerCase()) ||
+      (o.customerPhone && currentUser.phone && o.customerPhone === currentUser.phone)
   );
 
   const handleAddAddressSubmit = (e) => {

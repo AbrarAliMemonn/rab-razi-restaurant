@@ -34,6 +34,7 @@ export default function OrderTracking() {
     riderLiveLocation,
     setRiderLiveLocation,
     switchToRider,
+    currentUser,
     showToast 
   } = useApp();
 
@@ -48,8 +49,24 @@ export default function OrderTracking() {
     phone: '0300-1234567'
   };
 
-  // Find active order or fallback to first order
-  const currentOrder = orders.find((o) => o.id === activeOrderId) || orders[0];
+  // Filter orders strictly for the current logged-in user or active session
+  const userOrders = orders.filter((o) => {
+    if (currentUser) {
+      return (
+        (o.userId && o.userId === currentUser.id) ||
+        (o.customerEmail && currentUser.email && o.customerEmail.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (o.customerPhone && currentUser.phone && o.customerPhone === currentUser.phone) ||
+        (activeOrderId && o.id === activeOrderId)
+      );
+    }
+    return Boolean(activeOrderId && o.id === activeOrderId);
+  });
+
+  // Current selected order: either the searched/active order or latest user order
+  const currentOrder =
+    (activeOrderId && orders.find((o) => o.id === activeOrderId)) ||
+    userOrders[0] ||
+    null;
 
   const handleSearchOrder = (e) => {
     e.preventDefault();
@@ -68,7 +85,7 @@ export default function OrderTracking() {
       showToast(`Showing Order #${found.id}`, 'success');
       setLookupId('');
     } else {
-      showToast(`Order #${cleanId} not found. Check order list below`, 'warning');
+      showToast(`Order #${cleanId} not found. Please verify your Order ID`, 'warning');
     }
   };
 
@@ -169,13 +186,13 @@ export default function OrderTracking() {
         </div>
 
         {/* Recent Orders Selector Pills */}
-        {orders.length > 0 && (
+        {userOrders.length > 0 && (
           <div className="pt-2 border-t border-zinc-800/80">
             <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block mb-2">
               Select Your Recent Orders:
             </span>
             <div className="flex flex-wrap gap-2">
-              {orders.map((ord) => {
+              {userOrders.map((ord) => {
                 const isSelected = currentOrder && currentOrder.id === ord.id;
                 const statusColor =
                   ord.status === 'delivered'

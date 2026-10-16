@@ -8,13 +8,26 @@ export default function BottomNav() {
     setCurrentTab,
     cartTotalCount,
     setIsCartOpen,
-    orders
+    orders,
+    currentUser,
+    activeOrderId
   } = useApp();
 
-  // Check if there is an active running order (pending, preparing, on_the_way)
-  const hasActiveOrder = orders.some(
-    (o) => o.status === 'pending' || o.status === 'preparing' || o.status === 'on_the_way'
-  );
+  // Check if current user has an active running order (pending, preparing, on_the_way)
+  const hasActiveOrder = orders.some((o) => {
+    const isRunning = o.status === 'pending' || o.status === 'preparing' || o.status === 'on_the_way';
+    if (!isRunning) return false;
+
+    if (currentUser) {
+      return (
+        (o.userId && o.userId === currentUser.id) ||
+        (o.customerEmail && currentUser.email && o.customerEmail.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (o.customerPhone && currentUser.phone && o.customerPhone === currentUser.phone) ||
+        (activeOrderId && o.id === activeOrderId)
+      );
+    }
+    return Boolean(activeOrderId && o.id === activeOrderId);
+  });
 
   const customerNavItems = [
     { id: 'home', label: 'Home', icon: Home },

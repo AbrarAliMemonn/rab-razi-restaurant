@@ -16,21 +16,21 @@ export function AppProvider({ children }) {
     }
   });
 
-  // Orders state
+  // Orders state (Starts empty; no demo orders for fresh users)
   const [orders, setOrders] = useState(() => {
     try {
       const saved = localStorage.getItem('rrr_orders');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed[0]?.customerAddress?.includes('Islamabad')) {
-          localStorage.setItem('rrr_orders', JSON.stringify(INITIAL_ORDERS));
-          return INITIAL_ORDERS;
-        }
-        return parsed;
+        const cleaned = parsed.filter(
+          (o) => o.id !== 'RRR-7821' && o.id !== 'RRR-6534' && o.id !== 'RRR-5109' && !o.customerAddress?.includes('Islamabad')
+        );
+        localStorage.setItem('rrr_orders', JSON.stringify(cleaned));
+        return cleaned;
       }
-      return INITIAL_ORDERS;
+      return [];
     } catch {
-      return INITIAL_ORDERS;
+      return [];
     }
   });
 
@@ -85,9 +85,13 @@ export function AppProvider({ children }) {
   const [activeOrderId, setActiveOrderId] = useState(() => {
     try {
       const saved = localStorage.getItem('rrr_active_order');
-      return saved || (INITIAL_ORDERS[0]?.id || null);
+      if (saved && (saved === 'RRR-7821' || saved === 'RRR-6534' || saved === 'RRR-5109')) {
+        localStorage.removeItem('rrr_active_order');
+        return null;
+      }
+      return saved || null;
     } catch {
-      return INITIAL_ORDERS[0]?.id || null;
+      return null;
     }
   });
 
@@ -317,6 +321,28 @@ export function AppProvider({ children }) {
     }
   }, [authToken]);
 
+  // Scope active tracked order to the active user
+  const syncUserActiveOrder = (user) => {
+    if (!user) {
+      setActiveOrderId(null);
+      localStorage.removeItem('rrr_active_order');
+      return;
+    }
+    const userRunningOrder = orders.find(
+      (o) =>
+        ((o.userId && o.userId === user.id) ||
+         (o.customerEmail && user.email && o.customerEmail.toLowerCase() === user.email.toLowerCase()) ||
+         (o.customerPhone && user.phone && o.customerPhone === user.phone)) &&
+        (o.status === 'pending' || o.status === 'preparing' || o.status === 'on_the_way')
+    );
+    if (userRunningOrder) {
+      setActiveOrderId(userRunningOrder.id);
+    } else {
+      setActiveOrderId(null);
+      localStorage.removeItem('rrr_active_order');
+    }
+  };
+
   const loginUser = async (identifier, password) => {
     const res = await authApi.login(identifier, password);
     if (res.ok && res.data?.success) {
@@ -325,6 +351,7 @@ export function AppProvider({ children }) {
       setAuthToken(token);
       localStorage.setItem('rrr_current_user', JSON.stringify(user));
       localStorage.setItem('rrr_auth_token', token);
+      syncUserActiveOrder(user);
       setIsAuthModalOpen(false);
       showToast(`Welcome back, ${user.name}! 👋`, 'success');
       return { success: true, user };
@@ -354,6 +381,7 @@ export function AppProvider({ children }) {
           setAuthToken('jwt_token_admin_abrar');
           localStorage.setItem('rrr_current_user', JSON.stringify(adminUser));
           localStorage.setItem('rrr_auth_token', 'jwt_token_admin_abrar');
+          syncUserActiveOrder(adminUser);
           setIsAuthModalOpen(false);
           showToast('Welcome Abrar Ali Memon! Admin access enabled 👑', 'success');
           return { success: true, user: adminUser };
@@ -370,6 +398,7 @@ export function AppProvider({ children }) {
         setAuthToken(`mock_token_${safeUser.id}`);
         localStorage.setItem('rrr_current_user', JSON.stringify(safeUser));
         localStorage.setItem('rrr_auth_token', `mock_token_${safeUser.id}`);
+        syncUserActiveOrder(safeUser);
         setIsAuthModalOpen(false);
         showToast(`Welcome back, ${safeUser.name}!`, 'success');
         return { success: true, user: safeUser };
@@ -389,6 +418,8 @@ export function AppProvider({ children }) {
       setAuthToken(token);
       localStorage.setItem('rrr_current_user', JSON.stringify(user));
       localStorage.setItem('rrr_auth_token', token);
+      setActiveOrderId(null);
+      localStorage.removeItem('rrr_active_order');
       setIsAuthModalOpen(false);
       showToast(user.role === 'admin' ? `Welcome Admin Abrar Ali Memon! 👑` : `Welcome to Rab Razi Restaurant, ${user.name}! 🎉`, 'success');
       return { success: true, user };
@@ -422,6 +453,8 @@ export function AppProvider({ children }) {
       setAuthToken(`mock_token_${safeUser.id}`);
       localStorage.setItem('rrr_current_user', JSON.stringify(safeUser));
       localStorage.setItem('rrr_auth_token', `mock_token_${safeUser.id}`);
+      setActiveOrderId(null);
+      localStorage.removeItem('rrr_active_order');
       setIsAuthModalOpen(false);
       showToast(isAdmin ? 'Welcome Abrar Ali Memon! Admin account created 👑' : `Account created successfully! Welcome ${safeUser.name}!`, 'success');
       return { success: true, user: safeUser };
@@ -433,8 +466,10 @@ export function AppProvider({ children }) {
   const logoutUser = () => {
     setCurrentUser(null);
     setAuthToken(null);
+    setActiveOrderId(null);
     localStorage.removeItem('rrr_current_user');
     localStorage.removeItem('rrr_auth_token');
+    localStorage.removeItem('rrr_active_order');
     setIsProfileModalOpen(false);
     showToast('Logged out safely', 'info');
   };
@@ -492,6 +527,8 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (activeOrderId) {
       localStorage.setItem('rrr_active_order', activeOrderId);
+    } else {
+      localStorage.removeItem('rrr_active_order');
     }
   }, [activeOrderId]);
 
@@ -576,6 +613,7 @@ export function AppProvider({ children }) {
     const newOrder = {
       id: newOrderId,
       userId: currentUser ? currentUser.id : null,
+      customerEmail: currentUser?.email || '',
       customerName: orderData.customerName || (currentUser ? currentUser.name : 'Valued Guest'),
       customerPhone: orderData.customerPhone || (currentUser ? currentUser.phone : '0300-0000000'),
       customerAddress: orderData.customerAddress || userLocation,

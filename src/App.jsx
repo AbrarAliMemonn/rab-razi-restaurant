@@ -50,12 +50,43 @@ function MainLayout() {
     cartSubtotal,
     setIsCartOpen,
     orders,
-    activeOrderId
+    activeOrderId,
+    currentUser
   } = useApp();
 
-  // Active tracked order for Customer live banner
+  // Active tracked order for Customer live banner (strictly scoped to this user)
   const [dismissedOrderId, setDismissedOrderId] = React.useState(null);
-  const activeOrder = orders.find((o) => o.id === activeOrderId) || orders.find((o) => o.status === 'pending' || o.status === 'preparing' || o.status === 'on_the_way');
+
+  const activeOrder = React.useMemo(() => {
+    // 1. If activeOrderId is set, verify it belongs to current user or was placed in current guest session
+    if (activeOrderId) {
+      const match = orders.find((o) => o.id === activeOrderId);
+      if (match) {
+        if (!currentUser) return match; // guest session order
+        if (
+          match.userId === currentUser.id ||
+          (match.customerEmail && currentUser.email && match.customerEmail.toLowerCase() === currentUser.email.toLowerCase()) ||
+          (match.customerPhone && currentUser.phone && match.customerPhone === currentUser.phone)
+        ) {
+          return match;
+        }
+      }
+    }
+
+    // 2. If logged in user, look for any of THEIR running orders
+    if (currentUser) {
+      return orders.find(
+        (o) =>
+          (o.userId === currentUser.id ||
+           (o.customerEmail && currentUser.email && o.customerEmail.toLowerCase() === currentUser.email.toLowerCase()) ||
+           (o.customerPhone && currentUser.phone && o.customerPhone === currentUser.phone)) &&
+          (o.status === 'pending' || o.status === 'preparing' || o.status === 'on_the_way')
+      ) || null;
+    }
+
+    return null;
+  }, [orders, activeOrderId, currentUser]);
+
   const showOrderBanner = currentTab !== 'tracking' && activeOrder && activeOrder.id !== dismissedOrderId && (activeOrder.status === 'pending' || activeOrder.status === 'preparing' || activeOrder.status === 'on_the_way');
 
   // ==========================================================
