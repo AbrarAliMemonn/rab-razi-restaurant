@@ -32,9 +32,12 @@ import {
   Sparkles,
   ToggleLeft,
   ToggleRight,
-  Filter,
   CheckCircle,
-  HelpCircle
+  HelpCircle,
+  CreditCard,
+  Smartphone,
+  Building,
+  Copy
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { DEFAULT_CATEGORIES } from '../data/mockData';
@@ -106,8 +109,39 @@ export default function AdminPanel() {
     status: 'available'
   });
 
-  // Settings local state
-  const [settingsForm, setSettingsForm] = useState({ ...settings });
+  // Settings local state with comprehensive paymentMethods
+  const [settingsForm, setSettingsForm] = useState(() => ({
+    ...settings,
+    whatsapp: settings.whatsapp || settings.phone || '0300-9998877',
+    whatsappRaw: settings.whatsappRaw || '923009998877',
+    deliveryRadiusText: settings.deliveryRadiusText || 'Tando Bago City & Surrounding Areas (Within 5 km radius)',
+    customPaymentInstructions: settings.customPaymentInstructions || 'Please share screenshot on WhatsApp with your Order ID for instant payment verification.',
+    paymentMethods: {
+      cod: { enabled: true, title: 'Cash on Delivery', instructions: 'Pay in cash to the rider upon delivery at your doorstep.', ...(settings.paymentMethods?.cod || {}) },
+      jazzCash: { enabled: true, title: 'JazzCash', accountTitle: 'Rab Razi Restaurant', accountNumber: '0300-9998877', instructions: 'Transfer amount via JazzCash App or Retailer to 0300-9998877.', ...(settings.paymentMethods?.jazzCash || {}) },
+      easyPaisa: { enabled: true, title: 'EasyPaisa', accountTitle: 'Rab Razi Restaurant', accountNumber: '0300-9998877', instructions: 'Send money via EasyPaisa App to 0300-9998877.', ...(settings.paymentMethods?.easyPaisa || {}) },
+      bankTransfer: { enabled: false, title: 'Bank Transfer', bankName: 'Meezan Bank Ltd', accountTitle: 'Rab Razi Restaurant', accountNumber: 'PK00MEZN0000123456789012', instructions: 'Transfer to Meezan Bank account and send receipt on WhatsApp.', ...(settings.paymentMethods?.bankTransfer || {}) }
+    }
+  }));
+
+  React.useEffect(() => {
+    if (settings) {
+      setSettingsForm((prev) => ({
+        ...prev,
+        ...settings,
+        whatsapp: settings.whatsapp || prev.whatsapp || '0300-9998877',
+        whatsappRaw: settings.whatsappRaw || prev.whatsappRaw || '923009998877',
+        deliveryRadiusText: settings.deliveryRadiusText || prev.deliveryRadiusText || 'Tando Bago City & Surrounding Areas (Within 5 km radius)',
+        customPaymentInstructions: settings.customPaymentInstructions || prev.customPaymentInstructions || 'Please share screenshot on WhatsApp with your Order ID for instant payment verification.',
+        paymentMethods: {
+          cod: { enabled: true, title: 'Cash on Delivery', instructions: 'Pay in cash to the rider upon delivery at your doorstep.', ...(prev.paymentMethods?.cod || {}), ...(settings.paymentMethods?.cod || {}) },
+          jazzCash: { enabled: true, title: 'JazzCash', accountTitle: 'Rab Razi Restaurant', accountNumber: '0300-9998877', instructions: 'Transfer amount via JazzCash App or Retailer to 0300-9998877.', ...(prev.paymentMethods?.jazzCash || {}), ...(settings.paymentMethods?.jazzCash || {}) },
+          easyPaisa: { enabled: true, title: 'EasyPaisa', accountTitle: 'Rab Razi Restaurant', accountNumber: '0300-9998877', instructions: 'Send money via EasyPaisa App to 0300-9998877.', ...(prev.paymentMethods?.easyPaisa || {}), ...(settings.paymentMethods?.easyPaisa || {}) },
+          bankTransfer: { enabled: false, title: 'Bank Transfer', bankName: 'Meezan Bank Ltd', accountTitle: 'Rab Razi Restaurant', accountNumber: 'PK00MEZN0000123456789012', instructions: 'Transfer to Meezan Bank account and send receipt on WhatsApp.', ...(prev.paymentMethods?.bankTransfer || {}), ...(settings.paymentMethods?.bankTransfer || {}) }
+        }
+      }));
+    }
+  }, [settings]);
 
   // Preset image suggestions for Pakistani restaurant dishes
   const presetImages = [
@@ -1152,17 +1186,20 @@ export default function AdminPanel() {
       {/* ===================================================================== */}
       {/* TAB 4: STORE SETTINGS & TIMING (Clean, Beautiful, Organized, No Reset Button) */}
       {/* ===================================================================== */}
+      {/* ===================================================================== */}
+      {/* TAB 4: STORE SETTINGS & PAYMENT METHODS MANAGER */}
+      {/* ===================================================================== */}
       {activeAdminTab === 'settings' && (
         <form onSubmit={handleSaveSettings} className="space-y-5 animate-in fade-in duration-200">
           
-          {/* Card 1: Restaurant Profile & Timings */}
+          {/* Card 1: Restaurant Profile & Contact Details */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-4 shadow-lg">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
               <div className="flex items-center gap-2">
                 <Store className="w-5 h-5 text-amber-400" />
                 <div>
-                  <h3 className="text-sm font-black text-white">Restaurant Profile & Timings</h3>
-                  <p className="text-[11px] text-zinc-400">Restaurant name, contact numbers, address, and operating hours</p>
+                  <h3 className="text-sm font-black text-white">Restaurant Profile & Contact Info</h3>
+                  <p className="text-[11px] text-zinc-400">Manage calling numbers, WhatsApp orders, and operating hours</p>
                 </div>
               </div>
 
@@ -1204,17 +1241,59 @@ export default function AdminPanel() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-zinc-300">Contact Phone Numbers</label>
+                <label className="font-bold text-zinc-300 flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Primary Calling Phone</span>
+                </label>
                 <input
                   type="text"
                   required
                   value={settingsForm.phone}
                   onChange={(e) => setSettingsForm({ ...settingsForm, phone: e.target.value })}
+                  placeholder="0300-9998877"
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
                 />
               </div>
 
               <div className="space-y-1">
+                <label className="font-bold text-zinc-300 flex items-center gap-1.5">
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>WhatsApp Display Number</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={settingsForm.whatsapp}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, whatsapp: e.target.value })}
+                  placeholder="0300-9998877"
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div className="space-y-1 sm:col-span-2">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-zinc-300 flex items-center gap-1.5">
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>WhatsApp Order Number (Raw International Format)</span>
+                  </label>
+                  <span className="text-[10px] text-emerald-400 font-mono bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 rounded-lg">
+                    wa.me/{settingsForm.whatsappRaw || '923009998877'}
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  required
+                  value={settingsForm.whatsappRaw}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, whatsappRaw: e.target.value.replace(/[^0-9]/g, '') })}
+                  placeholder="923009998877 (Country code + number without + or spaces)"
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500 font-mono text-xs"
+                />
+                <p className="text-[10px] text-zinc-400">
+                  ⚡ All customer orders placed via "Order on WhatsApp" button will open directly to this verified number.
+                </p>
+              </div>
+
+              <div className="space-y-1 sm:col-span-2">
                 <label className="font-bold text-zinc-300">Opening Hours</label>
                 <input
                   type="text"
@@ -1260,7 +1339,7 @@ export default function AdminPanel() {
                     type="url"
                     value={settingsForm.googleMapsUrl || ''}
                     onChange={(e) => setSettingsForm({ ...settingsForm, googleMapsUrl: e.target.value })}
-                    placeholder="https://maps.app.goo.gl/..."
+                    placeholder="https://maps.app.goo.gl/j9TWCvYC6UaRACuf8"
                     className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500 text-xs font-mono"
                   />
                   <a
@@ -1274,7 +1353,7 @@ export default function AdminPanel() {
                   </a>
                 </div>
                 <p className="text-[10px] text-zinc-400">
-                  📍 Coordinates: 24.7885° N, 68.9609° E (Tando Bago, Sindh)
+                  📍 Coordinates: 24.7885° N, 68.9609° E (Rab Razi Restaurant, Tando Bago, Sindh)
                 </p>
               </div>
             </div>
@@ -1285,8 +1364,8 @@ export default function AdminPanel() {
             <div className="flex items-center gap-2 pb-3 border-b border-zinc-800">
               <Truck className="w-5 h-5 text-amber-400" />
               <div>
-                <h3 className="text-sm font-black text-white">Delivery Charges & Time Limit</h3>
-                <p className="text-[11px] text-zinc-400">Configure delivery fees, free delivery minimum, and estimated arrival time</p>
+                <h3 className="text-sm font-black text-white">Delivery Charges, Limits & Coverage Radius</h3>
+                <p className="text-[11px] text-zinc-400">Configure delivery fees, free delivery threshold, and service radius text</p>
               </div>
             </div>
 
@@ -1318,13 +1397,311 @@ export default function AdminPanel() {
                   value={settingsForm.estimatedDeliveryTime}
                   onChange={(e) => setSettingsForm({ ...settingsForm, estimatedDeliveryTime: e.target.value })}
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                  placeholder="30-40 min"
+                  placeholder="25-35 min"
+                />
+              </div>
+
+              <div className="space-y-1 sm:col-span-3">
+                <label className="font-bold text-zinc-300">Delivery Coverage Radius Text</label>
+                <input
+                  type="text"
+                  value={settingsForm.deliveryRadiusText || ''}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, deliveryRadiusText: e.target.value })}
+                  placeholder="Tando Bago City & Surrounding Areas (Within 5 km radius)"
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
                 />
               </div>
             </div>
           </div>
 
-          {/* Card 3: Promo Codes & Announcement Banner */}
+          {/* Card 3: Dynamic Payment Methods Manager */}
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-5 shadow-lg">
+            <div className="flex items-center gap-2 pb-3 border-b border-zinc-800">
+              <CreditCard className="w-5 h-5 text-amber-400" />
+              <div>
+                <h3 className="text-sm font-black text-white">Dynamic Payment Methods Manager</h3>
+                <p className="text-[11px] text-zinc-400">Toggle payment methods ON/OFF and manage customer payment accounts</p>
+              </div>
+            </div>
+
+            {/* 1. Cash on Delivery (COD) */}
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">💵</span>
+                  <div>
+                    <h4 className="text-xs font-bold text-white">Cash on Delivery (COD)</h4>
+                    <p className="text-[11px] text-zinc-400">Allow customers to pay cash upon food delivery</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = Boolean(settingsForm.paymentMethods?.cod?.enabled);
+                    setSettingsForm({
+                      ...settingsForm,
+                      paymentMethods: {
+                        ...settingsForm.paymentMethods,
+                        cod: { ...settingsForm.paymentMethods?.cod, enabled: !current }
+                      }
+                    });
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+                    settingsForm.paymentMethods?.cod?.enabled
+                      ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                      : 'bg-zinc-800 border-zinc-700 text-zinc-400'
+                  }`}
+                >
+                  {settingsForm.paymentMethods?.cod?.enabled ? 'Active (ON) ✓' : 'Disabled (OFF)'}
+                </button>
+              </div>
+            </div>
+
+            {/* 2. JazzCash */}
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <Smartphone className="w-5 h-5 text-red-500" />
+                  <div>
+                    <h4 className="text-xs font-bold text-white">JazzCash Mobile Account</h4>
+                    <p className="text-[11px] text-zinc-400">Receive instant online payments via JazzCash</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = Boolean(settingsForm.paymentMethods?.jazzCash?.enabled);
+                    setSettingsForm({
+                      ...settingsForm,
+                      paymentMethods: {
+                        ...settingsForm.paymentMethods,
+                        jazzCash: { ...settingsForm.paymentMethods?.jazzCash, enabled: !current }
+                      }
+                    });
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+                    settingsForm.paymentMethods?.jazzCash?.enabled
+                      ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                      : 'bg-zinc-800 border-zinc-700 text-zinc-400'
+                  }`}
+                >
+                  {settingsForm.paymentMethods?.jazzCash?.enabled ? 'Active (ON) ✓' : 'Disabled (OFF)'}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-zinc-900 text-xs">
+                <div className="space-y-1">
+                  <label className="font-bold text-zinc-300">JazzCash Account Title</label>
+                  <input
+                    type="text"
+                    value={settingsForm.paymentMethods?.jazzCash?.accountTitle || ''}
+                    onChange={(e) => setSettingsForm({
+                      ...settingsForm,
+                      paymentMethods: {
+                        ...settingsForm.paymentMethods,
+                        jazzCash: { ...settingsForm.paymentMethods?.jazzCash, accountTitle: e.target.value }
+                      }
+                    })}
+                    placeholder="e.g. Rab Razi Restaurant"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-zinc-300">JazzCash Mobile Number</label>
+                  <input
+                    type="text"
+                    value={settingsForm.paymentMethods?.jazzCash?.accountNumber || ''}
+                    onChange={(e) => setSettingsForm({
+                      ...settingsForm,
+                      paymentMethods: {
+                        ...settingsForm.paymentMethods,
+                        jazzCash: { ...settingsForm.paymentMethods?.jazzCash, accountNumber: e.target.value }
+                      }
+                    })}
+                    placeholder="0300-9998877"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500 font-mono"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 3. EasyPaisa */}
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <Smartphone className="w-5 h-5 text-emerald-500" />
+                  <div>
+                    <h4 className="text-xs font-bold text-white">EasyPaisa Mobile Account</h4>
+                    <p className="text-[11px] text-zinc-400">Receive instant online payments via EasyPaisa</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = Boolean(settingsForm.paymentMethods?.easyPaisa?.enabled);
+                    setSettingsForm({
+                      ...settingsForm,
+                      paymentMethods: {
+                        ...settingsForm.paymentMethods,
+                        easyPaisa: { ...settingsForm.paymentMethods?.easyPaisa, enabled: !current }
+                      }
+                    });
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+                    settingsForm.paymentMethods?.easyPaisa?.enabled
+                      ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                      : 'bg-zinc-800 border-zinc-700 text-zinc-400'
+                  }`}
+                >
+                  {settingsForm.paymentMethods?.easyPaisa?.enabled ? 'Active (ON) ✓' : 'Disabled (OFF)'}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-zinc-900 text-xs">
+                <div className="space-y-1">
+                  <label className="font-bold text-zinc-300">EasyPaisa Account Title</label>
+                  <input
+                    type="text"
+                    value={settingsForm.paymentMethods?.easyPaisa?.accountTitle || ''}
+                    onChange={(e) => setSettingsForm({
+                      ...settingsForm,
+                      paymentMethods: {
+                        ...settingsForm.paymentMethods,
+                        easyPaisa: { ...settingsForm.paymentMethods?.easyPaisa, accountTitle: e.target.value }
+                      }
+                    })}
+                    placeholder="e.g. Rab Razi Restaurant"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-zinc-300">EasyPaisa Mobile Number</label>
+                  <input
+                    type="text"
+                    value={settingsForm.paymentMethods?.easyPaisa?.accountNumber || ''}
+                    onChange={(e) => setSettingsForm({
+                      ...settingsForm,
+                      paymentMethods: {
+                        ...settingsForm.paymentMethods,
+                        easyPaisa: { ...settingsForm.paymentMethods?.easyPaisa, accountNumber: e.target.value }
+                      }
+                    })}
+                    placeholder="0300-9998877"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500 font-mono"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Bank Transfer */}
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <Building className="w-5 h-5 text-amber-500" />
+                  <div>
+                    <h4 className="text-xs font-bold text-white">Bank Account / IBAN Transfer</h4>
+                    <p className="text-[11px] text-zinc-400">Direct inter-bank funds transfer (IBFT)</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = Boolean(settingsForm.paymentMethods?.bankTransfer?.enabled);
+                    setSettingsForm({
+                      ...settingsForm,
+                      paymentMethods: {
+                        ...settingsForm.paymentMethods,
+                        bankTransfer: { ...settingsForm.paymentMethods?.bankTransfer, enabled: !current }
+                      }
+                    });
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+                    settingsForm.paymentMethods?.bankTransfer?.enabled
+                      ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                      : 'bg-zinc-800 border-zinc-700 text-zinc-400'
+                  }`}
+                >
+                  {settingsForm.paymentMethods?.bankTransfer?.enabled ? 'Active (ON) ✓' : 'Disabled (OFF)'}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-zinc-900 text-xs">
+                <div className="space-y-1">
+                  <label className="font-bold text-zinc-300">Bank Name</label>
+                  <input
+                    type="text"
+                    value={settingsForm.paymentMethods?.bankTransfer?.bankName || ''}
+                    onChange={(e) => setSettingsForm({
+                      ...settingsForm,
+                      paymentMethods: {
+                        ...settingsForm.paymentMethods,
+                        bankTransfer: { ...settingsForm.paymentMethods?.bankTransfer, bankName: e.target.value }
+                      }
+                    })}
+                    placeholder="e.g. Meezan Bank Ltd"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-zinc-300">Account Title</label>
+                  <input
+                    type="text"
+                    value={settingsForm.paymentMethods?.bankTransfer?.accountTitle || ''}
+                    onChange={(e) => setSettingsForm({
+                      ...settingsForm,
+                      paymentMethods: {
+                        ...settingsForm.paymentMethods,
+                        bankTransfer: { ...settingsForm.paymentMethods?.bankTransfer, accountTitle: e.target.value }
+                      }
+                    })}
+                    placeholder="e.g. Rab Razi Restaurant"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-zinc-300">IBAN / Account Number</label>
+                  <input
+                    type="text"
+                    value={settingsForm.paymentMethods?.bankTransfer?.accountNumber || ''}
+                    onChange={(e) => setSettingsForm({
+                      ...settingsForm,
+                      paymentMethods: {
+                        ...settingsForm.paymentMethods,
+                        bankTransfer: { ...settingsForm.paymentMethods?.bankTransfer, accountNumber: e.target.value }
+                      }
+                    })}
+                    placeholder="PK00MEZN0000123456789012"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500 font-mono text-[11px]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Custom Payment Instructions */}
+            <div className="space-y-1 text-xs">
+              <label className="font-bold text-zinc-300 flex items-center gap-1.5">
+                <span>Custom Payment Instructions for Customers</span>
+                <span className="text-[10px] text-amber-400 font-normal">(Visible on checkout)</span>
+              </label>
+              <textarea
+                rows={2}
+                value={settingsForm.customPaymentInstructions || ''}
+                onChange={(e) => setSettingsForm({ ...settingsForm, customPaymentInstructions: e.target.value })}
+                placeholder="e.g. Please share payment screenshot on WhatsApp with your Order ID for instant kitchen approval."
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500 text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Card 4: Promo Codes & Announcement Banner */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-4 shadow-lg">
             <div className="flex items-center gap-2 pb-3 border-b border-zinc-800">
               <Tag className="w-5 h-5 text-amber-400" />
@@ -1425,7 +1802,7 @@ export default function AdminPanel() {
                   required
                   value={riderFormData.phone}
                   onChange={(e) => setRiderFormData({ ...riderFormData, phone: e.target.value })}
-                  placeholder="0312-9876543"
+                  placeholder="0315-7788990"
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
                 />
               </div>
@@ -1436,7 +1813,7 @@ export default function AdminPanel() {
                   type="text"
                   value={riderFormData.bike}
                   onChange={(e) => setRiderFormData({ ...riderFormData, bike: e.target.value })}
-                  placeholder="e.g. Honda CG 125 (ICT-992)"
+                  placeholder="e.g. Honda CG 125 (BDN-992)"
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
                 />
               </div>

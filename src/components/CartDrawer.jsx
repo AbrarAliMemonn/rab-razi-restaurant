@@ -12,6 +12,7 @@ import {
   CreditCard, 
   Banknote, 
   Smartphone,
+  Building,
   CheckCircle2,
   AlertCircle,
   MessageCircle,
@@ -53,6 +54,38 @@ export default function CartDrawer() {
   const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
   const [transactionId, setTransactionId] = useState('');
   const [copiedAccount, setCopiedAccount] = useState(false);
+
+  // Dynamic payment methods configured by Admin
+  const availablePaymentMethods = React.useMemo(() => {
+    const pm = settings?.paymentMethods || {};
+    const methods = [];
+    if (pm.cod?.enabled !== false) {
+      methods.push({ id: 'Cash on Delivery', label: pm.cod?.title || 'Cash on Delivery', icon: Banknote, key: 'cod' });
+    }
+    if (pm.jazzCash?.enabled) {
+      methods.push({ id: 'JazzCash', label: pm.jazzCash?.title || 'JazzCash', icon: Smartphone, key: 'jazzCash' });
+    }
+    if (pm.easyPaisa?.enabled) {
+      methods.push({ id: 'EasyPaisa', label: pm.easyPaisa?.title || 'EasyPaisa', icon: Smartphone, key: 'easyPaisa' });
+    }
+    if (pm.bankTransfer?.enabled) {
+      methods.push({ id: 'Bank Transfer', label: pm.bankTransfer?.title || 'Bank Transfer', icon: Building, key: 'bankTransfer' });
+    }
+    if (methods.length === 0) {
+      methods.push({ id: 'Cash on Delivery', label: 'Cash on Delivery', icon: Banknote, key: 'cod' });
+    }
+    return methods;
+  }, [settings?.paymentMethods]);
+
+  // Keep paymentMethod valid if admin disabled currently selected method
+  useEffect(() => {
+    if (availablePaymentMethods.length > 0) {
+      const exists = availablePaymentMethods.some((m) => m.id === paymentMethod);
+      if (!exists) {
+        setPaymentMethod(availablePaymentMethods[0].id);
+      }
+    }
+  }, [availablePaymentMethods, paymentMethod]);
 
   const handleCopyAccount = (number) => {
     navigator.clipboard.writeText(number);
@@ -125,8 +158,9 @@ export default function CartDrawer() {
       return;
     }
 
-    if (!customerPhone.trim() || customerPhone.length < 10) {
-      showToast('Please enter a valid phone number (at least 10 digits)', 'warning');
+    const cleanPhone = customerPhone.replace(/[\s-]/g, '');
+    if (!/^(03|\+923)[0-9]{9}$/.test(cleanPhone)) {
+      showToast('Please enter a valid Pakistani mobile number (e.g. 03001234567 or +923001234567)', 'warning');
       return;
     }
 
@@ -140,7 +174,7 @@ export default function CartDrawer() {
     setTimeout(() => {
       placeOrder({
         customerName: customerName.trim(),
-        customerPhone: customerPhone.trim(),
+        customerPhone: cleanPhone,
         customerAddress: deliveryMode === 'delivery' ? customerAddress.trim() : settings.address,
         deliveryType: deliveryMode === 'delivery' ? 'Delivery' : 'Takeaway',
         notes: orderNotes.trim(),
@@ -168,8 +202,9 @@ export default function CartDrawer() {
       return;
     }
 
-    if (!customerPhone.trim() || customerPhone.length < 10) {
-      showToast('Please enter a valid phone number (at least 10 digits)', 'warning');
+    const cleanPhone = customerPhone.replace(/[\s-]/g, '');
+    if (!/^(03|\+923)[0-9]{9}$/.test(cleanPhone)) {
+      showToast('Please enter a valid Pakistani mobile number (e.g. 03001234567 or +923001234567)', 'warning');
       return;
     }
 
@@ -182,7 +217,7 @@ export default function CartDrawer() {
 
     const orderId = placeOrder({
       customerName: customerName.trim(),
-      customerPhone: customerPhone.trim(),
+      customerPhone: cleanPhone,
       customerAddress: deliveryMode === 'delivery' ? customerAddress.trim() : settings.address,
       deliveryType: deliveryMode === 'delivery' ? 'Delivery' : 'Takeaway',
       notes: orderNotes.trim(),
@@ -194,7 +229,7 @@ export default function CartDrawer() {
       total: grandTotal
     });
 
-    const waNumber = settings.whatsappRaw || '923009998877';
+    const waNumber = (settings.whatsappRaw || '923009998877').replace(/[^0-9]/g, '');
     const dateStr = new Date().toLocaleString('en-PK', { dateStyle: 'medium', timeStyle: 'short' });
 
     const itemsList = cart.map((item, idx) => {
@@ -466,7 +501,7 @@ export default function CartDrawer() {
                     type="tel"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
-                    placeholder="Mobile Number (e.g. 0300-1234567) *"
+                    placeholder="Mobile Number (e.g. 0300XXXXXXX) *"
                     required
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
                   />
@@ -514,12 +549,7 @@ export default function CartDrawer() {
                     Select Payment Method
                   </label>
                   <div className="grid grid-cols-2 gap-2 text-xs">
-                    {[
-                      { id: 'Cash on Delivery', icon: Banknote, label: 'Cash on Delivery' },
-                      { id: 'JazzCash', icon: Smartphone, label: 'JazzCash' },
-                      { id: 'EasyPaisa', icon: Smartphone, label: 'EasyPaisa' },
-                      { id: 'Online Card', icon: CreditCard, label: 'Debit/Credit Card' }
-                    ].map((m) => {
+                    {availablePaymentMethods.map((m) => {
                       const Icon = m.icon;
                       const isSelected = paymentMethod === m.id;
                       return (
@@ -527,13 +557,13 @@ export default function CartDrawer() {
                           key={m.id}
                           type="button"
                           onClick={() => setPaymentMethod(m.id)}
-                          className={`p-2.5 rounded-xl border text-left flex items-center gap-2 transition-all ${
+                          className={`p-2.5 rounded-xl border text-left flex items-center gap-2 transition-all cursor-pointer ${
                             isSelected
                               ? 'bg-amber-500/15 border-amber-500 text-amber-400 font-bold'
                               : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200'
                           }`}
                         >
-                          <Icon className="w-3.5 h-3.5" />
+                          <Icon className="w-3.5 h-3.5 flex-shrink-0" />
                           <span className="text-[11px] truncate">{m.label}</span>
                         </button>
                       );
@@ -541,52 +571,136 @@ export default function CartDrawer() {
                   </div>
 
                   {/* Manual JazzCash / EasyPaisa Transfer Card */}
-                  {(paymentMethod === 'JazzCash' || paymentMethod === 'EasyPaisa') && (
-                    <div className="mt-3 p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-amber-600/10 border border-amber-500/30 space-y-2.5 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-amber-400 flex items-center gap-1.5">
-                          <span>{paymentMethod} Official Account:</span>
-                        </span>
-                        <span className="text-[10px] bg-zinc-900 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 font-semibold">
-                          Manual Transfer
-                        </span>
-                      </div>
+                  {(paymentMethod === 'JazzCash' || paymentMethod === 'EasyPaisa') && (() => {
+                    const methodKey = paymentMethod === 'JazzCash' ? 'jazzCash' : 'easyPaisa';
+                    const accountConfig = settings?.paymentMethods?.[methodKey] || settings?.paymentAccounts?.[methodKey] || {};
+                    const title = accountConfig.accountTitle || accountConfig.title || 'Rab Razi Restaurant';
+                    const number = accountConfig.accountNumber || accountConfig.number || '0300-9998877';
+                    const instructions = accountConfig.instructions || settings?.customPaymentInstructions;
 
-                      <div className="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800 flex items-center justify-between">
-                        <div>
-                          <div className="text-[10px] text-zinc-500 uppercase font-semibold">
-                            Title: <span className="text-zinc-200 font-bold">{settings.paymentAccounts?.[paymentMethod === 'JazzCash' ? 'jazzCash' : 'easyPaisa']?.title || 'Rab Razi Restaurant'}</span>
-                          </div>
-                          <div className="text-sm font-black text-amber-400 font-mono tracking-wider mt-0.5">
-                            {settings.paymentAccounts?.[paymentMethod === 'JazzCash' ? 'jazzCash' : 'easyPaisa']?.number || '0300-9998877'}
-                          </div>
+                    return (
+                      <div className="mt-3 p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-amber-600/10 border border-amber-500/30 space-y-2.5 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-amber-400 flex items-center gap-1.5">
+                            <span>{paymentMethod} Official Account:</span>
+                          </span>
+                          <span className="text-[10px] bg-zinc-900 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 font-semibold">
+                            Manual Transfer
+                          </span>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() => handleCopyAccount(settings.paymentAccounts?.[paymentMethod === 'JazzCash' ? 'jazzCash' : 'easyPaisa']?.number || '0300-9998877')}
-                          className="px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer border border-zinc-700"
-                        >
-                          {copiedAccount ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-amber-400" />}
-                          <span>{copiedAccount ? 'Copied' : 'Copy'}</span>
-                        </button>
-                      </div>
+                        <div className="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800 flex items-center justify-between">
+                          <div>
+                            <div className="text-[10px] text-zinc-500 uppercase font-semibold">
+                              Title: <span className="text-zinc-200 font-bold">{title}</span>
+                            </div>
+                            <div className="text-sm font-black text-amber-400 font-mono tracking-wider mt-0.5">
+                              {number}
+                            </div>
+                          </div>
 
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-zinc-300 block">
-                          Transaction ID (TID) / Reference Number:
-                        </label>
-                        <input
-                          type="text"
-                          value={transactionId}
-                          onChange={(e) => setTransactionId(e.target.value)}
-                          placeholder="e.g. 1048291048 (from SMS or receipt)"
-                          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
-                        />
-                        <p className="text-[10px] text-zinc-400">
-                          Transfer Rs. {grandTotal.toLocaleString()} and enter TID above for instant kitchen approval.
-                        </p>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyAccount(number)}
+                            className="px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer border border-zinc-700"
+                          >
+                            {copiedAccount ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-amber-400" />}
+                            <span>{copiedAccount ? 'Copied' : 'Copy'}</span>
+                          </button>
+                        </div>
+
+                        {instructions && (
+                          <p className="text-[11px] text-amber-200/90 bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">
+                            💡 {instructions}
+                          </p>
+                        )}
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-zinc-300 block">
+                            Transaction ID (TID) / Reference Number:
+                          </label>
+                          <input
+                            type="text"
+                            value={transactionId}
+                            onChange={(e) => setTransactionId(e.target.value)}
+                            placeholder="e.g. 1048291048 (from SMS or receipt)"
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+                          />
+                          <p className="text-[10px] text-zinc-400">
+                            Transfer Rs. {grandTotal.toLocaleString()} and enter TID above for instant kitchen approval.
+                          </p>
+                        </div>
                       </div>
+                    );
+                  })()}
+
+                  {/* Bank Transfer Card */}
+                  {paymentMethod === 'Bank Transfer' && (() => {
+                    const bankConfig = settings?.paymentMethods?.bankTransfer || {};
+                    const bankName = bankConfig.bankName || 'Meezan Bank Ltd';
+                    const title = bankConfig.accountTitle || 'Rab Razi Restaurant';
+                    const number = bankConfig.accountNumber || 'PK00MEZN0000123456789012';
+                    const instructions = bankConfig.instructions || settings?.customPaymentInstructions;
+
+                    return (
+                      <div className="mt-3 p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-amber-600/10 border border-amber-500/30 space-y-2.5 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-amber-400 flex items-center gap-1.5">
+                            <span>Official Bank Account:</span>
+                          </span>
+                          <span className="text-[10px] bg-zinc-900 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 font-semibold">
+                            Direct Transfer / Raast
+                          </span>
+                        </div>
+
+                        <div className="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800 flex items-center justify-between">
+                          <div>
+                            <div className="text-[10px] text-amber-400 font-bold uppercase">{bankName}</div>
+                            <div className="text-[10px] text-zinc-400 mt-0.5">Title: <span className="text-zinc-200 font-bold">{title}</span></div>
+                            <div className="text-xs font-mono font-black text-zinc-100 tracking-wider mt-0.5 break-all">
+                              {number}
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleCopyAccount(number)}
+                            className="px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer border border-zinc-700 flex-shrink-0 ml-2"
+                          >
+                            {copiedAccount ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-amber-400" />}
+                            <span>{copiedAccount ? 'Copied' : 'Copy'}</span>
+                          </button>
+                        </div>
+
+                        {instructions && (
+                          <p className="text-[11px] text-amber-200/90 bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">
+                            💡 {instructions}
+                          </p>
+                        )}
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-zinc-300 block">
+                            Transaction Reference / Receipt ID:
+                          </label>
+                          <input
+                            type="text"
+                            value={transactionId}
+                            onChange={(e) => setTransactionId(e.target.value)}
+                            placeholder="e.g. RAAST-8829104 or Bank Ref ID"
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+                          />
+                          <p className="text-[10px] text-zinc-400">
+                            Transfer Rs. {grandTotal.toLocaleString()} and enter transaction reference above.
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* General custom instructions note if Cash on Delivery */}
+                  {paymentMethod === 'Cash on Delivery' && settings?.customPaymentInstructions && (
+                    <div className="mt-2 p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-[11px] text-zinc-400">
+                      💡 {settings.customPaymentInstructions}
                     </div>
                   )}
                 </div>

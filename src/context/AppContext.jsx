@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { INITIAL_MENU_ITEMS, INITIAL_ORDERS, INITIAL_SETTINGS, INITIAL_RIDERS } from '../data/mockData';
-import { authApi, ordersApi } from '../services/api';
+import { authApi, ordersApi, settingsApi } from '../services/api';
 
 const AppContext = createContext();
 
@@ -23,7 +23,7 @@ export function AppProvider({ children }) {
       if (saved) {
         const parsed = JSON.parse(saved);
         const cleaned = parsed.filter(
-          (o) => o.id !== 'RRR-7821' && o.id !== 'RRR-6534' && o.id !== 'RRR-5109' && !o.customerAddress?.includes('Islamabad')
+          (o) => o.id !== 'RRR-7821' && o.id !== 'RRR-6534' && o.id !== 'RRR-5109'
         );
         localStorage.setItem('rrr_orders', JSON.stringify(cleaned));
         return cleaned;
@@ -40,10 +40,6 @@ export function AppProvider({ children }) {
       const saved = localStorage.getItem('rrr_riders');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed[0]?.bike?.includes('ICT')) {
-          localStorage.setItem('rrr_riders', JSON.stringify(INITIAL_RIDERS));
-          return INITIAL_RIDERS;
-        }
         return parsed;
       }
       return INITIAL_RIDERS;
@@ -52,16 +48,21 @@ export function AppProvider({ children }) {
     }
   });
 
-  // Restaurant settings (Self-healing to Tando Bago location)
+  // Restaurant settings (Self-healing with active backend settings)
   const [settings, setSettings] = useState(() => {
     try {
       const saved = localStorage.getItem('rrr_settings');
       if (saved) {
         const parsed = JSON.parse(saved);
-        const merged = { ...INITIAL_SETTINGS, ...parsed };
-        if (!parsed.googleMapsUrl || (parsed.address && parsed.address.includes('Islamabad')) || !parsed.whatsappRaw) {
-          localStorage.setItem('rrr_settings', JSON.stringify(merged));
-        }
+        const merged = {
+          ...INITIAL_SETTINGS,
+          ...parsed,
+          paymentMethods: {
+            ...INITIAL_SETTINGS.paymentMethods,
+            ...(parsed.paymentMethods || {})
+          }
+        };
+        localStorage.setItem('rrr_settings', JSON.stringify(merged));
         return merged;
       }
       return INITIAL_SETTINGS;
@@ -104,6 +105,47 @@ export function AppProvider({ children }) {
     }
     return 'user';
   });
+
+  // 1. Sanitize local storage to remove any old plaintext passwords
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('rrr_local_users');
+      if (stored) {
+        const users = JSON.parse(stored);
+        if (Array.isArray(users)) {
+          const sanitized = users.map(({ password, passwordHash, ...user }) => user);
+          localStorage.setItem('rrr_local_users', JSON.stringify(sanitized));
+        }
+      }
+    } catch {}
+  }, []);
+
+  // 2. Fetch latest active restaurant settings from backend
+  useEffect(() => {
+    async function loadServerSettings() {
+      try {
+        const res = await settingsApi.get();
+        if (res.ok && res.data?.settings) {
+          setSettings((prev) => {
+            const merged = {
+              ...prev,
+              ...res.data.settings,
+              paymentMethods: {
+                ...prev.paymentMethods,
+                ...(res.data.settings.paymentMethods || {})
+              }
+            };
+            localStorage.setItem('rrr_settings', JSON.stringify(merged));
+            return merged;
+          });
+        }
+      } catch (err) {
+        // graceful offline fallback
+      }
+    }
+    loadServerSettings();
+  }, []);
+
 
 
 
@@ -361,26 +403,8 @@ export function AppProvider({ children }) {
 
     // Offline / LocalStorage fallback (Validates against stored user accounts without plain-text bypasses)
     if (res.isOffline) {
-      const localUsers = JSON.parse(localStorage.getItem('rrr_local_users') || '[]');
-      const cleanId = identifier.trim().toLowerCase();
-
-      const found = localUsers.find(
-        (u) => (u.email?.toLowerCase() === cleanId || u.phone === identifier.trim()) && u.password === password
-      );
-
-      if (found) {
-        const { password: _, ...safeUser } = found;
-        setCurrentUser(safeUser);
-        setAuthToken(`mock_token_${safeUser.id}`);
-        localStorage.setItem('rrr_current_user', JSON.stringify(safeUser));
-        localStorage.setItem('rrr_auth_token', `mock_token_${safeUser.id}`);
-        syncUserActiveOrder(safeUser);
-        setIsAuthModalOpen(false);
-        showToast(`Welcome back, ${safeUser.name}!`, 'success');
-        return { success: true, user: safeUser };
-      }
-
-      return { success: false, message: 'Invalid email/phone or password.' };
+      showToast('Backend server is currently offline. Please check your internet connection to log in.', 'warning');
+      return { success: false, message: 'Server offline. Internet connection required to log in.' };
     }
 
     return { success: false, message: res.data?.message || 'Login failed.' };
@@ -441,28 +465,27 @@ export function AppProvider({ children }) {
       return { success: true, user };
     }
 
-    // Offline / LocalStorage fallback (Strictly registers customer role)
+    // Offline / LocalStorage fallback (Never stores plaintext passwords)
     if (res.isOffline) {
       const localUsers = JSON.parse(localStorage.getItem('rrr_local_users') || '[]');
       const newUserId = `usr-${Date.now().toString().slice(-6)}`;
       const cleanEmail = userData.email ? userData.email.trim().toLowerCase() : '';
 
-      const newUser = {
+      const safeUser = {
         id: newUserId,
         name: userData.name.trim(),
         email: cleanEmail,
         phone: userData.phone ? userData.phone.trim() : '',
-        password: userData.password,
         role: 'customer',
         addresses: userData.address ? [
           { id: `addr-${Date.now()}`, label: 'Home', address: userData.address.trim(), isDefault: true }
         ] : []
       };
 
-      localUsers.push(newUser);
+      // Safely store user profile without password
+      localUsers.push(safeUser);
       localStorage.setItem('rrr_local_users', JSON.stringify(localUsers));
 
-      const { password: _, ...safeUser } = newUser;
       setCurrentUser(safeUser);
       setAuthToken(`mock_token_${safeUser.id}`);
       localStorage.setItem('rrr_current_user', JSON.stringify(safeUser));
@@ -628,11 +651,12 @@ export function AppProvider({ children }) {
       id: newOrderId,
       userId: currentUser ? currentUser.id : null,
       customerEmail: currentUser?.email || '',
-      customerName: orderData.customerName || (currentUser ? currentUser.name : 'Valued Guest'),
-      customerPhone: orderData.customerPhone || (currentUser ? currentUser.phone : '0300-0000000'),
+      customerName: orderData.customerName || (currentUser ? currentUser.name : 'Valued Customer'),
+      customerPhone: orderData.customerPhone || (currentUser ? currentUser.phone : ''),
       customerAddress: orderData.customerAddress || userLocation,
       deliveryType: deliveryMode === 'delivery' ? 'Delivery' : deliveryMode === 'pickup' ? 'Takeaway' : 'Dine In',
       paymentMethod: orderData.paymentMethod || 'Cash on Delivery',
+      transactionId: orderData.transactionId || '',
       notes: orderData.notes || '',
       items: cart.map((i) => ({
         id: i.id,
@@ -648,7 +672,7 @@ export function AppProvider({ children }) {
       total: orderData.total,
       status: 'pending', // Order pending approval from admin/kitchen
       riderName: availableRider ? availableRider.name : 'Farhan Tariq (Rider #14)',
-      riderPhone: availableRider ? availableRider.phone : '0312-9876543',
+      riderPhone: availableRider ? availableRider.phone : '0315-7788990',
       riderBike: availableRider ? availableRider.bike : 'Honda CG 125 (BDN-992)',
       estimatedMinutes: deliveryMode === 'delivery' ? 35 : 20,
       createdAt: now.toISOString(),
@@ -856,10 +880,32 @@ export function AppProvider({ children }) {
     );
   };
 
-  // Admin: Update settings
-  const updateSettings = (newSettings) => {
-    setSettings(newSettings);
-    showToast('Restaurant settings updated!');
+  // Admin: Update settings (persists to backend and local state)
+  const updateSettings = async (newSettings) => {
+    setSettings((prev) => {
+      const merged = {
+        ...prev,
+        ...newSettings,
+        paymentMethods: {
+          ...prev.paymentMethods,
+          ...(newSettings.paymentMethods || {})
+        }
+      };
+      localStorage.setItem('rrr_settings', JSON.stringify(merged));
+      return merged;
+    });
+
+    try {
+      const res = await settingsApi.update(newSettings);
+      if (res.ok && res.data?.settings) {
+        setSettings(res.data.settings);
+        localStorage.setItem('rrr_settings', JSON.stringify(res.data.settings));
+      }
+    } catch (err) {
+      console.warn('Could not persist settings to server:', err);
+    }
+
+    showToast('Restaurant settings updated successfully!');
   };
 
   return (

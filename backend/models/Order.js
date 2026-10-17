@@ -74,7 +74,7 @@ const orderSchema = new mongoose.Schema({
   },
   riderPhone: { 
     type: String, 
-    default: '0312-9876543' 
+    default: '0315-7788990' 
   },
   riderBike: { 
     type: String, 

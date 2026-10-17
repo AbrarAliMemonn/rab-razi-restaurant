@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import menuRoutes from './routes/menuRoutes.js';
+import settingsRoutes from './routes/settingsRoutes.js';
 import { connectDB } from './config/db.js';
 
 dotenv.config();
@@ -25,6 +26,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/menu', menuRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -49,14 +51,18 @@ app.get('/', (req, res) => {
         addAddress: 'POST /api/auth/address'
       },
       orders: {
-        getAll: 'GET /api/orders',
+        getAll: 'GET /api/orders (Auth required)',
         getOne: 'GET /api/orders/:id',
         create: 'POST /api/orders',
-        updateStatus: 'PATCH /api/orders/:id/status'
+        updateStatus: 'PATCH /api/orders/:id/status (Auth required)'
       },
       menu: {
         getAll: 'GET /api/menu',
         getOne: 'GET /api/menu/:id'
+      },
+      settings: {
+        get: 'GET /api/settings',
+        update: 'PUT /api/settings (Admin JWT required)'
       },
       health: 'GET /api/health'
     }

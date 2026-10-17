@@ -357,17 +357,34 @@ export const INITIAL_SETTINGS = {
   estimatedDeliveryTime: '25-35 min',
   promoCode: 'RAZI20',
   promoDiscountPercent: 20,
-  announcement: '🎉 Rab Razi Restaurant, Tando Bago: Flat 20% OFF using code "RAZI20" on all orders!',
-  paymentAccounts: {
+  customPaymentInstructions: 'Please share screenshot on WhatsApp with your Order ID for instant payment verification.',
+  paymentMethods: {
+    cod: {
+      enabled: true,
+      title: 'Cash on Delivery',
+      instructions: 'Pay in cash to the rider upon delivery at your doorstep.'
+    },
     jazzCash: {
-      title: 'Rab Razi Restaurant',
-      number: '0300-9998877',
-      instructions: 'Transfer order amount via JazzCash App to account 0300-9998877'
+      enabled: true,
+      title: 'JazzCash',
+      accountTitle: 'Rab Razi Restaurant',
+      accountNumber: '0300-9998877',
+      instructions: 'Transfer amount via JazzCash App or Retailer to 0300-9998877.'
     },
     easyPaisa: {
-      title: 'Rab Razi Restaurant',
-      number: '0300-9998877',
-      instructions: 'Send money via EasyPaisa App to account 0300-9998877'
+      enabled: true,
+      title: 'EasyPaisa',
+      accountTitle: 'Rab Razi Restaurant',
+      accountNumber: '0300-9998877',
+      instructions: 'Send money via EasyPaisa App to 0300-9998877.'
+    },
+    bankTransfer: {
+      enabled: false,
+      title: 'Bank Transfer',
+      bankName: 'Meezan Bank Ltd',
+      accountTitle: 'Rab Razi Restaurant',
+      accountNumber: 'PK00MEZN0000123456789012',
+      instructions: 'Transfer to Meezan Bank account and send receipt on WhatsApp.'
     }
   },
   socials: {
@@ -381,7 +398,7 @@ export const INITIAL_RIDERS = [
   {
     id: 'rider-1',
     name: 'Farhan Tariq (Rider #14)',
-    phone: '0312-9876543',
+    phone: '0315-7788990',
     bike: 'Honda CG 125 (BDN-992)',
     status: 'on_delivery',
     totalDeliveries: 142,
@@ -391,7 +408,7 @@ export const INITIAL_RIDERS = [
   {
     id: 'rider-2',
     name: 'Bilal Ahmed (Rider #28)',
-    phone: '0315-7788990',
+    phone: '0312-8822119',
     bike: 'Yamaha YBR 125 (BDN-4512)',
     status: 'available',
     totalDeliveries: 98,
@@ -412,7 +429,7 @@ export const INITIAL_RIDERS = [
     id: 'rider-4',
     name: 'Hamza Malik (Rider #03)',
     phone: '0300-4455667',
-    bike: 'Suzuki GS 150 (ISB-1120)',
+    bike: 'Suzuki GS 150 (BDN-4821)',
     status: 'off_duty',
     totalDeliveries: 110,
     rating: 4.7,

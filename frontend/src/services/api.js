@@ -92,3 +92,16 @@ export const menuApi = {
     return await request(`/menu${query ? `?${query}` : ''}`, { method: 'GET' });
   }
 };
+
+export const settingsApi = {
+  get: async () => {
+    return await request('/settings', { method: 'GET' });
+  },
+  update: async (settingsData) => {
+    return await request('/settings', {
+      method: 'PUT',
+      body: JSON.stringify(settingsData)
+    });
+  }
+};
+

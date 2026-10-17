@@ -50,6 +50,13 @@ export default function AuthModal() {
       setErrorMessage('Please fill in both fields.');
       return;
     }
+
+    const cleanId = loginIdentifier.replace(/[\s-]/g, '');
+    if ((cleanId.startsWith('03') || cleanId.startsWith('+923')) && !/^(03|\+923)[0-9]{9}$/.test(cleanId)) {
+      setErrorMessage('Please enter a valid Pakistani mobile number (e.g. 03001234567 or +923001234567).');
+      return;
+    }
+
     setLoading(true);
     const res = await loginUser(loginIdentifier, loginPassword);
     setLoading(false);
@@ -64,6 +71,13 @@ export default function AuthModal() {
     if (!regName.trim() || !regPassword || (!regEmail && !regPhone)) {
       setErrorMessage('Name, password, and email/phone are required.');
       return;
+    }
+    if (regPhone) {
+      const cleanPhone = regPhone.replace(/[\s-]/g, '');
+      if (!/^(03|\+923)[0-9]{9}$/.test(cleanPhone)) {
+        setErrorMessage('Please enter a valid Pakistani mobile number (e.g. 03001234567 or +923001234567).');
+        return;
+      }
     }
     if (regPassword.length < 6) {
       setErrorMessage('Password must be at least 6 characters.');
@@ -153,7 +167,7 @@ export default function AuthModal() {
                     type="text"
                     value={loginIdentifier}
                     onChange={(e) => setLoginIdentifier(e.target.value)}
-                    placeholder="e.g. 0300-1234567 or email"
+                    placeholder="e.g. 0300XXXXXXX or email"
                     required
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
                   />
@@ -233,7 +247,7 @@ export default function AuthModal() {
                       type="tel"
                       value={regPhone}
                       onChange={(e) => setRegPhone(e.target.value)}
-                      placeholder="0300-1234567"
+                      placeholder="0300XXXXXXX (11 digits)"
                       required
                       className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl pl-10 pr-3 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
                     />

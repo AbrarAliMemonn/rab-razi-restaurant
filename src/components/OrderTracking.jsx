@@ -46,7 +46,7 @@ export default function OrderTracking() {
     address: 'Main Badin-Mirpurkhas Road, Tando Bago, Sindh',
     plusCode: 'QXQ6+C96',
     googleMapsUrl: 'https://maps.app.goo.gl/j9TWCvYC6UaRACuf8',
-    phone: '0300-1234567'
+    phone: '0300-9998877'
   };
 
   // Filter orders strictly for the current logged-in user or active session
@@ -577,7 +577,7 @@ export default function OrderTracking() {
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 {currentOrder.status === 'on_the_way' ? (
                   <a
-                    href={`tel:${currentOrder.riderPhone || '0312-9876543'}`}
+                    href={`tel:${currentOrder.riderPhone || '0315-7788990'}`}
                     className="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md"
                   >
                     <Phone className="w-3.5 h-3.5" />
@@ -585,7 +585,7 @@ export default function OrderTracking() {
                   </a>
                 ) : (
                   <a
-                    href={`tel:${safeSettings.phone || '0300-1234567'}`}
+                    href={`tel:${safeSettings.phone || '0300-9998877'}`}
                     className="flex-1 sm:flex-none px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-zinc-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md"
                   >
                     <Phone className="w-3.5 h-3.5" />
