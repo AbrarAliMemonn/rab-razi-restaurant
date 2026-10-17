@@ -72,16 +72,20 @@ export const ordersApi = {
   getAll: async () => {
     return await request('/orders', { method: 'GET' });
   },
+  getById: async (orderId) => {
+    return await request(`/orders/${encodeURIComponent(orderId)}`, { method: 'GET' });
+  },
   create: async (orderData) => {
     return await request('/orders', {
       method: 'POST',
       body: JSON.stringify(orderData)
     });
   },
-  updateStatus: async (orderId, status) => {
-    return await request(`/orders/${orderId}/status`, {
+  updateStatus: async (orderId, statusData) => {
+    const payload = typeof statusData === 'string' ? { status: statusData } : statusData;
+    return await request(`/orders/${encodeURIComponent(orderId)}/status`, {
       method: 'PATCH',
-      body: JSON.stringify({ status })
+      body: JSON.stringify(payload)
     });
   }
 };

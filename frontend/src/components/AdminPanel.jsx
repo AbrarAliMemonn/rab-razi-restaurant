@@ -865,7 +865,14 @@ export default function AdminPanel() {
 
                         {isPreparing && (
                           <button
-                            onClick={() => updateOrderStatus(order.id, 'on_the_way')}
+                            onClick={() => {
+                              const assignedRider = riders.find((r) => r.name === order.riderName) || riders.find((r) => r.status === 'available') || riders[0];
+                              updateOrderStatus(order.id, 'on_the_way', {
+                                riderName: assignedRider?.name || 'Farhan Tariq (Rider #14)',
+                                riderPhone: assignedRider?.phone || '0315-7788990',
+                                riderBike: assignedRider?.bike || 'Honda CG 125 (BDN-992)'
+                              });
+                            }}
                             className="w-full sm:w-auto justify-center px-4 py-2.5 sm:py-2 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-zinc-950 shadow-lg shadow-amber-950/40 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
                           >
                             <span>Dispatch Rider 🛵</span>

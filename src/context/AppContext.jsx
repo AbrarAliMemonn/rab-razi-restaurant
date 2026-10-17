@@ -349,10 +349,62 @@ export function AppProvider({ children }) {
   // Multi-device real-time orders synchronization from backend API
   const refreshOrders = async () => {
     try {
-      const res = await ordersApi.getAll();
-      if (res.ok && res.data?.orders) {
-        setOrders(res.data.orders);
-        localStorage.setItem('rrr_orders', JSON.stringify(res.data.orders));
+      // 1. If user has authToken (Admin or logged-in Customer), fetch from /api/orders
+      if (authToken) {
+        const res = await ordersApi.getAll();
+        if (res.ok && Array.isArray(res.data?.orders)) {
+          setOrders((prev) => {
+            const serverOrders = res.data.orders;
+            const serverMap = new Map(serverOrders.map((o) => [o.id.toUpperCase(), o]));
+
+            // Start with server orders
+            const merged = [...serverOrders];
+
+            // Preserve local orders that are not yet returned by server (e.g. newly placed within 10 min)
+            prev.forEach((localOrder) => {
+              const upperId = localOrder.id.toUpperCase();
+              if (!serverMap.has(upperId)) {
+                merged.push(localOrder);
+              } else {
+                // If local order has more advanced status, preserve the latest status
+                const serverOrder = serverMap.get(upperId);
+                const statusOrder = ['pending', 'preparing', 'on_the_way', 'delivered', 'cancelled'];
+                const localIndex = statusOrder.indexOf(localOrder.status);
+                const serverIndex = statusOrder.indexOf(serverOrder.status);
+                if (localIndex > serverIndex && serverOrder.status !== 'cancelled') {
+                  const idx = merged.findIndex((o) => o.id.toUpperCase() === upperId);
+                  if (idx > -1) {
+                    merged[idx] = { ...serverOrder, ...localOrder };
+                  }
+                }
+              }
+            });
+
+            // Sort by createdAt descending
+            merged.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+            localStorage.setItem('rrr_orders', JSON.stringify(merged));
+            return merged;
+          });
+        }
+      }
+
+      // 2. If there's an activeOrderId being tracked (whether logged in or guest), sync its live status directly!
+      if (activeOrderId) {
+        const singleRes = await ordersApi.getById(activeOrderId);
+        if (singleRes.ok && singleRes.data?.order) {
+          const freshOrder = singleRes.data.order;
+          setOrders((prev) => {
+            const exists = prev.some((o) => o.id.toUpperCase() === freshOrder.id.toUpperCase());
+            let updated;
+            if (exists) {
+              updated = prev.map((o) => (o.id.toUpperCase() === freshOrder.id.toUpperCase() ? { ...o, ...freshOrder } : o));
+            } else {
+              updated = [freshOrder, ...prev];
+            }
+            localStorage.setItem('rrr_orders', JSON.stringify(updated));
+            return updated;
+          });
+        }
       }
     } catch {
       // offline / fallback
@@ -361,9 +413,12 @@ export function AppProvider({ children }) {
 
   useEffect(() => {
     refreshOrders();
-    const interval = setInterval(refreshOrders, 15000);
+    // Fast 3.5s polling for Admin panel or customer tracking active order
+    const isLiveMode = portalMode === 'admin' || currentTab === 'tracking' || Boolean(activeOrderId);
+    const intervalMs = isLiveMode ? 3500 : 10000;
+    const interval = setInterval(refreshOrders, intervalMs);
     return () => clearInterval(interval);
-  }, [authToken]);
+  }, [authToken, portalMode, currentTab, activeOrderId]);
 
   // Scope active tracked order to the active user
   const syncUserActiveOrder = (user) => {
@@ -697,7 +752,15 @@ export function AppProvider({ children }) {
 
     // Sync order with backend
     try {
-      ordersApi.create(newOrder);
+      ordersApi.create(newOrder).then((res) => {
+        if (res.ok && res.data?.order) {
+          setOrders((prev) => {
+            const updated = prev.map((o) => (o.id.toUpperCase() === newOrderId.toUpperCase() ? { ...o, ...res.data.order } : o));
+            localStorage.setItem('rrr_orders', JSON.stringify(updated));
+            return updated;
+          });
+        }
+      });
     } catch {
       // safe fallback
     }
@@ -718,12 +781,12 @@ export function AppProvider({ children }) {
   };
 
   // Admin: Update order status (Approve to Preparing, Dispatch, etc.)
-  const updateOrderStatus = (orderId, newStatus) => {
+  const updateOrderStatus = async (orderId, newStatus, riderInfo = {}) => {
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     setOrders((prev) => {
       const updated = prev.map((order) => {
-        if (order.id === orderId) {
+        if (order.id.toUpperCase() === orderId.toUpperCase()) {
           const updatedTimestamps = {
             ...order.statusTimestamps,
             [newStatus]: now
@@ -732,7 +795,10 @@ export function AppProvider({ children }) {
           return {
             ...order,
             status: newStatus,
-            statusTimestamps: updatedTimestamps
+            statusTimestamps: updatedTimestamps,
+            ...(riderInfo.riderName ? { riderName: riderInfo.riderName } : {}),
+            ...(riderInfo.riderPhone ? { riderPhone: riderInfo.riderPhone } : {}),
+            ...(riderInfo.riderBike ? { riderBike: riderInfo.riderBike } : {})
           };
         }
         return order;
@@ -742,34 +808,49 @@ export function AppProvider({ children }) {
 
       const customerBroadcastMsg =
         newStatus === 'preparing'
-          ? `🍳 Order #${orderId} Approved! Kitchen me pakna shuru ho gaya hai (Preparing)`
+          ? `🍳 Order #${orderId} Approved! Kitchen me cooking shuru ho gayi hai (Preparing)`
           : newStatus === 'on_the_way'
-          ? `🛵 Order #${orderId} Dispatched! Rider on the way.`
+          ? `🛵 Order #${orderId} Dispatched! Rider aapka khana le kar aa rha hai!`
           : newStatus === 'delivered'
           ? `✓ Order #${orderId} Delivered!`
           : null;
 
-      broadcastOrders(updated, customerBroadcastMsg, newStatus === 'preparing' ? 'success' : 'info');
+      broadcastOrders(updated, customerBroadcastMsg, newStatus === 'preparing' || newStatus === 'on_the_way' ? 'success' : 'info');
       return updated;
     });
 
     if (newStatus === 'preparing') {
-      showToast(`Order #${orderId} approved! User ko 'Preparing' show hoga 🍳`, 'success');
+      showToast(`Order #${orderId} approved! Sent to kitchen 🍳`, 'success');
+    } else if (newStatus === 'on_the_way') {
+      showToast(`Order #${orderId} dispatched! Rider is on the way 🛵`, 'success');
     } else {
       showToast(`Order ${orderId} status changed to "${newStatus.replace('_', ' ').toUpperCase()}"`, 'info');
+    }
+
+    // Persist to backend server
+    try {
+      const payload = {
+        status: newStatus,
+        ...(riderInfo.riderName ? { riderName: riderInfo.riderName } : {}),
+        ...(riderInfo.riderPhone ? { riderPhone: riderInfo.riderPhone } : {}),
+        ...(riderInfo.riderBike ? { riderBike: riderInfo.riderBike } : {})
+      };
+      await ordersApi.updateStatus(orderId, payload);
+    } catch (err) {
+      console.warn('Backend order status update error:', err);
     }
   };
 
   // Admin: Assign specific Rider to Order
-  const assignRiderToOrder = (orderId, riderId) => {
+  const assignRiderToOrder = async (orderId, riderId) => {
     const rider = riders.find((r) => r.id === riderId);
     if (!rider) return;
 
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    setOrders((prev) =>
-      prev.map((ord) => {
-        if (ord.id === orderId) {
+    setOrders((prev) => {
+      const updated = prev.map((ord) => {
+        if (ord.id.toUpperCase() === orderId.toUpperCase()) {
           return {
             ...ord,
             status: ord.status === 'pending' || ord.status === 'preparing' ? 'on_the_way' : ord.status,
@@ -783,12 +864,15 @@ export function AppProvider({ children }) {
           };
         }
         return ord;
-      })
-    );
+      });
+      localStorage.setItem('rrr_orders', JSON.stringify(updated));
+      broadcastOrders(updated, `🛵 Order #${orderId} assigned to ${rider.name}! Rider is on the way.`, 'success');
+      return updated;
+    });
 
     // Update rider's status
-    setRiders((prev) =>
-      prev.map((r) =>
+    setRiders((prev) => {
+      const updated = prev.map((r) =>
         r.id === riderId
           ? {
               ...r,
@@ -796,10 +880,24 @@ export function AppProvider({ children }) {
               totalDeliveries: (r.totalDeliveries || 0) + 1
             }
           : r
-      )
-    );
+      );
+      localStorage.setItem('rrr_riders', JSON.stringify(updated));
+      return updated;
+    });
 
-    showToast(`Order #${orderId} assigned to ${rider.name}! 🛵`, 'success');
+    showToast(`Order #${orderId} assigned to ${rider.name} (Rider On The Way)! 🛵`, 'success');
+
+    // Persist to backend server
+    try {
+      await ordersApi.updateStatus(orderId, {
+        status: 'on_the_way',
+        riderName: rider.name,
+        riderPhone: rider.phone,
+        riderBike: rider.bike
+      });
+    } catch (err) {
+      console.warn('Backend assign rider error:', err);
+    }
   };
 
   // Admin: Rider Management Functions

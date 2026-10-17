@@ -60,8 +60,12 @@ export function getAllOrders(req, res) {
 export function getOrderById(req, res) {
   try {
     const { id } = req.params;
+    const cleanId = id.toUpperCase().replace(/^RRR-/, '');
     const orders = getOrders();
-    const order = orders.find((o) => o.id.toUpperCase() === id.toUpperCase());
+    const order = orders.find((o) => {
+      const oid = o.id.toUpperCase().replace(/^RRR-/, '');
+      return oid === cleanId || o.id.toUpperCase() === id.toUpperCase();
+    });
 
     if (!order) {
       return res.status(404).json({ success: false, message: `Order #${id} not found.` });
@@ -134,14 +138,18 @@ export function updateOrderStatus(req, res) {
     }
 
     const { id } = req.params;
-    const { status } = req.body; // 'pending' | 'preparing' | 'on_the_way' | 'delivered' | 'cancelled'
+    const { status, riderName, riderPhone, riderBike, riderId } = req.body;
 
     if (!status) {
       return res.status(400).json({ success: false, message: 'New status is required.' });
     }
 
+    const cleanId = id.toUpperCase().replace(/^RRR-/, '');
     const orders = getOrders();
-    const orderIndex = orders.findIndex((o) => o.id.toUpperCase() === id.toUpperCase());
+    const orderIndex = orders.findIndex((o) => {
+      const oid = o.id.toUpperCase().replace(/^RRR-/, '');
+      return oid === cleanId || o.id.toUpperCase() === id.toUpperCase();
+    });
 
     if (orderIndex === -1) {
       return res.status(404).json({ success: false, message: `Order #${id} not found.` });
@@ -151,6 +159,11 @@ export function updateOrderStatus(req, res) {
     const order = orders[orderIndex];
 
     order.status = status;
+    if (riderName) order.riderName = riderName;
+    if (riderPhone) order.riderPhone = riderPhone;
+    if (riderBike) order.riderBike = riderBike;
+    if (riderId) order.riderId = riderId;
+
     order.statusTimestamps = {
       ...(order.statusTimestamps || {}),
       [status]: now
@@ -161,7 +174,7 @@ export function updateOrderStatus(req, res) {
 
     return res.json({
       success: true,
-      message: `Order #${id} status updated to ${status}.`,
+      message: `Order #${order.id} status updated to ${status}.`,
       order
     });
   } catch (error) {

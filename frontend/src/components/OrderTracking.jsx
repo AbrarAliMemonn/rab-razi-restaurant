@@ -35,6 +35,7 @@ export default function OrderTracking() {
     setRiderLiveLocation,
     switchToRider,
     currentUser,
+    refreshOrders,
     showToast 
   } = useApp();
 
@@ -67,6 +68,34 @@ export default function OrderTracking() {
     (activeOrderId && orders.find((o) => o.id === activeOrderId)) ||
     userOrders[0] ||
     null;
+
+  // Real-time background sync while tracking active order
+  useEffect(() => {
+    if (currentOrder && (currentOrder.status === 'pending' || currentOrder.status === 'preparing' || currentOrder.status === 'on_the_way')) {
+      const interval = setInterval(() => {
+        if (typeof refreshOrders === 'function') {
+          refreshOrders();
+        }
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [currentOrder?.id, currentOrder?.status, refreshOrders]);
+
+  // Alert customer dynamically when order status transitions
+  const prevStatusRef = useRef(currentOrder?.status);
+  useEffect(() => {
+    if (!currentOrder) return;
+    if (prevStatusRef.current && prevStatusRef.current !== currentOrder.status) {
+      if (currentOrder.status === 'preparing') {
+        showToast(`🍳 Order #${currentOrder.id} Approved! Kitchen me cooking shuru ho gayi hai!`, 'success');
+      } else if (currentOrder.status === 'on_the_way') {
+        showToast(`🛵 Rider Dispatched! ${currentOrder.riderName || 'Rider'} aapka khana le kar aa rha hai!`, 'success');
+      } else if (currentOrder.status === 'delivered') {
+        showToast(`🎉 Order #${currentOrder.id} Delivered! Rab Razi Blessings!`, 'success');
+      }
+    }
+    prevStatusRef.current = currentOrder.status;
+  }, [currentOrder?.status, currentOrder?.id, currentOrder?.riderName, showToast]);
 
   const handleSearchOrder = (e) => {
     e.preventDefault();
@@ -285,6 +314,54 @@ export default function OrderTracking() {
                 </div>
               </div>
             </div>
+
+            {/* Live Announcement Banners for On The Way & Preparing */}
+            {currentOrder.status === 'on_the_way' && (
+              <div className="mt-5 p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 border-2 border-amber-500/70 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-pulse">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-amber-500 text-zinc-950 flex items-center justify-center text-2xl font-black flex-shrink-0 shadow-lg">
+                    🛵
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-black text-amber-400 uppercase tracking-wide">
+                        Rider Dispatched! Ab Rider Khana Le Kar Aa Rha Hai
+                      </h3>
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping flex-shrink-0" />
+                    </div>
+                    <p className="text-xs text-zinc-200 mt-0.5">
+                      Rider <strong>{currentOrder.riderName || 'Farhan Tariq'}</strong> ({currentOrder.riderBike || 'Honda CG 125 (BDN-992)'}) aapka order le kar deliver karne nikal chuky hain!
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href={`tel:${currentOrder.riderPhone || '0315-7788990'}`}
+                  className="self-start sm:self-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow-md transition-all active:scale-95 whitespace-nowrap"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>Call Rider</span>
+                </a>
+              </div>
+            )}
+
+            {currentOrder.status === 'preparing' && (
+              <div className="mt-5 p-4 rounded-2xl bg-gradient-to-r from-orange-500/15 via-amber-500/15 to-orange-500/15 border border-orange-500/50 shadow-md flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-orange-500 text-zinc-950 flex items-center justify-center text-2xl font-black flex-shrink-0 shadow-md">
+                  🍳
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-black text-orange-400 uppercase tracking-wide">
+                      Order Approved & Kitchen Me Cooking Shuru!
+                    </h3>
+                    <span className="w-2 h-2 rounded-full bg-orange-400 animate-ping flex-shrink-0" />
+                  </div>
+                  <p className="text-xs text-zinc-300 mt-0.5">
+                    Admin ne aapka order approve kar diya hai. Taaza masalay aur khana kitchen me tayyar ho rha hai!
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Stepper Progress Bar */}
             <div className="pt-6 pb-3">
