@@ -7,7 +7,9 @@ import {
   Monitor, 
   Clock, 
   Sparkles,
-  User
+  User,
+  Phone,
+  MessageCircle
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -127,6 +129,27 @@ export default function Header() {
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2">
             
+            {/* Quick Contact: Call & WhatsApp */}
+            <a
+              href={`https://wa.me/${settings.whatsappRaw || '923009998877'}?text=${encodeURIComponent('Assalam-o-Alaikum Rab Razi Restaurant! I would like to check your menu and specials.')}`}
+              target="_blank"
+              rel="noreferrer"
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-900/50 transition-all shadow-sm active:scale-95"
+              title="Chat on WhatsApp"
+            >
+              <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+              <span>WhatsApp</span>
+            </a>
+
+            <a
+              href={`tel:${(settings.phone || '0300-9998877').replace(/[^0-9+]/g, '')}`}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white transition-all shadow-sm active:scale-95"
+              title="Call Rab Razi Restaurant"
+            >
+              <Phone className="w-3.5 h-3.5 text-amber-400" />
+              <span>{settings.phone || '0300-9998877'}</span>
+            </a>
+
             {/* View Mode Switcher: Mobile Frame Mockup vs Wide Responsive */}
             <button
               onClick={() => setIsMobileFrameMode(!isMobileFrameMode)}

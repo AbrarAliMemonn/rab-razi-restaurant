@@ -28,6 +28,7 @@ import {
   ShieldCheck,
   Bike,
   ChefHat,
+  MessageCircle,
   X
 } from 'lucide-react';
 
@@ -506,24 +507,36 @@ function MainLayout() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 text-[11px]">
+          <div className="flex flex-wrap items-center justify-center gap-3 text-[11px]">
             <a 
               href={`tel:${settings.phone.split('/')[0].trim()}`}
-              className="flex items-center gap-1 text-zinc-300 hover:text-amber-400 transition-colors"
+              className="flex items-center gap-1.5 text-zinc-300 hover:text-amber-400 transition-colors bg-zinc-900/90 px-3 py-1.5 rounded-xl border border-zinc-800"
             >
               <Phone className="w-3.5 h-3.5 text-amber-400" />
               <span>{settings.phone}</span>
             </a>
-            <span className="flex items-center gap-1 text-zinc-300">
+
+            <a 
+              href={`https://wa.me/${settings.whatsappRaw || '923009998877'}?text=${encodeURIComponent('Assalam-o-Alaikum Rab Razi Restaurant! I would like to place an order / inquire.')}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 transition-colors bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-800/60 font-semibold"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>WhatsApp: {settings.whatsapp || '0300-9998877'}</span>
+            </a>
+
+            <span className="flex items-center gap-1.5 text-zinc-300 bg-zinc-900/60 px-3 py-1.5 rounded-xl border border-zinc-800/60">
               <Clock className="w-3.5 h-3.5 text-amber-400" />
               <span>{settings.openingHours}</span>
             </span>
+
             <a
               href={settings.googleMapsUrl || 'https://maps.app.goo.gl/j9TWCvYC6UaRACuf8'}
               target="_blank"
               rel="noreferrer"
               title="Open Rab Razi Restaurant on Google Maps"
-              className="flex items-center gap-1 text-zinc-300 hover:text-amber-400 transition-colors bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-800"
+              className="flex items-center gap-1.5 text-zinc-300 hover:text-amber-400 transition-colors bg-zinc-900/90 px-3 py-1.5 rounded-xl border border-zinc-800"
             >
               <MapPin className="w-3.5 h-3.5 text-amber-400" />
               <span>{settings.address}</span>
@@ -531,7 +544,35 @@ function MainLayout() {
             </a>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 text-[11px] text-zinc-500">
+          {/* Social Media Links & Copyright */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 text-[11px] text-zinc-500">
+            <div className="flex items-center gap-2">
+              <span className="text-zinc-400 font-semibold">Follow Us:</span>
+              <a 
+                href={settings.socials?.facebook || 'https://facebook.com'}
+                target="_blank"
+                rel="noreferrer"
+                className="px-2 py-0.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-blue-400 transition-colors font-medium"
+              >
+                Facebook
+              </a>
+              <a 
+                href={settings.socials?.instagram || 'https://instagram.com'}
+                target="_blank"
+                rel="noreferrer"
+                className="px-2 py-0.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-pink-400 transition-colors font-medium"
+              >
+                Instagram
+              </a>
+              <a 
+                href={settings.socials?.tiktok || 'https://tiktok.com'}
+                target="_blank"
+                rel="noreferrer"
+                className="px-2 py-0.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-rose-400 transition-colors font-medium"
+              >
+                TikTok
+              </a>
+            </div>
             <span>© {new Date().getFullYear()} Rab Razi Restaurant. All rights reserved.</span>
           </div>
         </div>

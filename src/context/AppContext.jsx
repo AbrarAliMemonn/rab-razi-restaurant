@@ -58,12 +58,11 @@ export function AppProvider({ children }) {
       const saved = localStorage.getItem('rrr_settings');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (!parsed.googleMapsUrl || (parsed.address && parsed.address.includes('Islamabad'))) {
-          const merged = { ...parsed, ...INITIAL_SETTINGS };
+        const merged = { ...INITIAL_SETTINGS, ...parsed };
+        if (!parsed.googleMapsUrl || (parsed.address && parsed.address.includes('Islamabad')) || !parsed.whatsappRaw) {
           localStorage.setItem('rrr_settings', JSON.stringify(merged));
-          return merged;
         }
-        return parsed;
+        return merged;
       }
       return INITIAL_SETTINGS;
     } catch {
@@ -106,14 +105,7 @@ export function AppProvider({ children }) {
     return 'user';
   });
 
-  // Admin authentication state
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
-    try {
-      return localStorage.getItem('rrr_admin_auth') === 'true';
-    } catch {
-      return false;
-    }
-  });
+
 
   // Live GPS Coordinates of Rider (Foodpanda live tracking in Tando Bago: 24.788538, 68.960891)
   const [riderLiveLocation, setRiderLiveLocation] = useState(() => {
@@ -250,26 +242,7 @@ export function AppProvider({ children }) {
     setPortalMode('user');
   };
 
-  const loginAdmin = (username, password) => {
-    const cleanUser = username?.trim().toLowerCase();
-    if (
-      (cleanUser === 'abraralimemon23@gmail.com' && (password === 'admin123' || password === 'admin' || password === '123456' || password === '')) ||
-      (cleanUser === 'admin' && (password === 'admin123' || password === 'admin'))
-    ) {
-      setIsAdminAuthenticated(true);
-      localStorage.setItem('rrr_admin_auth', 'true');
-      showToast('Admin login successful! Welcome.', 'success');
-      return true;
-    }
-    showToast('Invalid credentials. Please enter your admin email.', 'warning');
-    return false;
-  };
 
-  const logoutAdmin = () => {
-    setIsAdminAuthenticated(false);
-    localStorage.removeItem('rrr_admin_auth');
-    showToast('Admin logged out safely', 'info');
-  };
 
   // User panel navigation states
   const [currentTab, setCurrentTab] = useState('home'); // 'home' | 'menu' | 'deals' | 'tracking'
@@ -321,6 +294,35 @@ export function AppProvider({ children }) {
     }
   }, [authToken]);
 
+  // Derived Admin authentication status (requires authenticated user with role 'admin' & valid token)
+  const isAdminAuthenticated = Boolean(
+    currentUser && currentUser.role === 'admin' && authToken
+  );
+
+  // Derived Rider authentication status (requires authenticated user with role 'rider' or 'admin' & valid token)
+  const isRiderAuthenticated = Boolean(
+    currentUser && (currentUser.role === 'rider' || currentUser.role === 'admin') && authToken
+  );
+
+  // Multi-device real-time orders synchronization from backend API
+  const refreshOrders = async () => {
+    try {
+      const res = await ordersApi.getAll();
+      if (res.ok && res.data?.orders) {
+        setOrders(res.data.orders);
+        localStorage.setItem('rrr_orders', JSON.stringify(res.data.orders));
+      }
+    } catch {
+      // offline / fallback
+    }
+  };
+
+  useEffect(() => {
+    refreshOrders();
+    const interval = setInterval(refreshOrders, 15000);
+    return () => clearInterval(interval);
+  }, [authToken]);
+
   // Scope active tracked order to the active user
   const syncUserActiveOrder = (user) => {
     if (!user) {
@@ -357,36 +359,10 @@ export function AppProvider({ children }) {
       return { success: true, user };
     }
 
-    // Offline / LocalStorage fallback
+    // Offline / LocalStorage fallback (Validates against stored user accounts without plain-text bypasses)
     if (res.isOffline) {
       const localUsers = JSON.parse(localStorage.getItem('rrr_local_users') || '[]');
       const cleanId = identifier.trim().toLowerCase();
-
-      // Dedicated Admin account: abraralimemon23@gmail.com
-      if (cleanId === 'abraralimemon23@gmail.com') {
-        const storedAdmin = localUsers.find((u) => u.email?.toLowerCase() === 'abraralimemon23@gmail.com');
-        const adminPass = storedAdmin ? storedAdmin.password : 'admin123';
-        if (password === adminPass) {
-          const adminUser = {
-            id: 'usr-admin-abrar',
-            name: storedAdmin?.name || 'Abrar Ali Memon',
-            email: 'abraralimemon23@gmail.com',
-            phone: storedAdmin?.phone || '0300-1234567',
-            role: 'admin',
-            addresses: [
-              { id: 'addr-admin-1', label: 'Restaurant Headquarters', address: 'Main Badin-Mirpurkhas Road, Tando Bago, Sindh', isDefault: true }
-            ]
-          };
-          setCurrentUser(adminUser);
-          setAuthToken('jwt_token_admin_abrar');
-          localStorage.setItem('rrr_current_user', JSON.stringify(adminUser));
-          localStorage.setItem('rrr_auth_token', 'jwt_token_admin_abrar');
-          syncUserActiveOrder(adminUser);
-          setIsAuthModalOpen(false);
-          showToast('Welcome Abrar Ali Memon! Admin access enabled 👑', 'success');
-          return { success: true, user: adminUser };
-        }
-      }
 
       const found = localUsers.find(
         (u) => (u.email?.toLowerCase() === cleanId || u.phone === identifier.trim()) && u.password === password
@@ -410,6 +386,46 @@ export function AppProvider({ children }) {
     return { success: false, message: res.data?.message || 'Login failed.' };
   };
 
+  // Dedicated Admin Login via backend authentication with role verification
+  const loginAdmin = async (identifier, password) => {
+    const res = await loginUser(identifier, password);
+    if (res.success && res.user) {
+      if (res.user.role === 'admin') {
+        showToast(`Welcome Admin ${res.user.name}! 👑`, 'success');
+        return { success: true, user: res.user };
+      } else {
+        showToast('Access Denied: This account does not have Admin privileges.', 'warning');
+        return { success: false, message: 'Admin role privileges required.' };
+      }
+    }
+    return res;
+  };
+
+  const logoutAdmin = () => {
+    logoutUser();
+    showToast('Admin logged out safely', 'info');
+  };
+
+  // Dedicated Rider Login via backend authentication with role verification
+  const loginRider = async (identifier, password) => {
+    const res = await loginUser(identifier, password);
+    if (res.success && res.user) {
+      if (res.user.role === 'rider' || res.user.role === 'admin') {
+        showToast(`Welcome Rider ${res.user.name}! 🛵`, 'success');
+        return { success: true, user: res.user };
+      } else {
+        showToast('Access Denied: Rider or Admin credentials required.', 'warning');
+        return { success: false, message: 'Rider privileges required.' };
+      }
+    }
+    return res;
+  };
+
+  const logoutRider = () => {
+    logoutUser();
+    showToast('Rider logged out safely', 'info');
+  };
+
   const registerUser = async (userData) => {
     const res = await authApi.register(userData);
     if (res.ok && res.data?.success) {
@@ -421,17 +437,15 @@ export function AppProvider({ children }) {
       setActiveOrderId(null);
       localStorage.removeItem('rrr_active_order');
       setIsAuthModalOpen(false);
-      showToast(user.role === 'admin' ? `Welcome Admin Abrar Ali Memon! 👑` : `Welcome to Rab Razi Restaurant, ${user.name}! 🎉`, 'success');
+      showToast(`Welcome to Rab Razi Restaurant, ${user.name}! 🎉`, 'success');
       return { success: true, user };
     }
 
-    // Offline / LocalStorage fallback
+    // Offline / LocalStorage fallback (Strictly registers customer role)
     if (res.isOffline) {
       const localUsers = JSON.parse(localStorage.getItem('rrr_local_users') || '[]');
       const newUserId = `usr-${Date.now().toString().slice(-6)}`;
       const cleanEmail = userData.email ? userData.email.trim().toLowerCase() : '';
-      const isAdmin = cleanEmail === 'abraralimemon23@gmail.com';
-      const role = isAdmin ? 'admin' : 'customer';
 
       const newUser = {
         id: newUserId,
@@ -439,7 +453,7 @@ export function AppProvider({ children }) {
         email: cleanEmail,
         phone: userData.phone ? userData.phone.trim() : '',
         password: userData.password,
-        role,
+        role: 'customer',
         addresses: userData.address ? [
           { id: `addr-${Date.now()}`, label: 'Home', address: userData.address.trim(), isDefault: true }
         ] : []
@@ -456,7 +470,7 @@ export function AppProvider({ children }) {
       setActiveOrderId(null);
       localStorage.removeItem('rrr_active_order');
       setIsAuthModalOpen(false);
-      showToast(isAdmin ? 'Welcome Abrar Ali Memon! Admin account created 👑' : `Account created successfully! Welcome ${safeUser.name}!`, 'success');
+      showToast(`Account created successfully! Welcome ${safeUser.name}!`, 'success');
       return { success: true, user: safeUser };
     }
 
@@ -859,6 +873,10 @@ export function AppProvider({ children }) {
         isAdminAuthenticated,
         loginAdmin,
         logoutAdmin,
+        isRiderAuthenticated,
+        loginRider,
+        logoutRider,
+        refreshOrders,
         riderLiveLocation,
         setRiderLiveLocation,
         menuItems,

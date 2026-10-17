@@ -25,8 +25,91 @@ export default function RiderPortal() {
     updateOrderStatus,
     switchToUser,
     switchToAdmin,
+    isRiderAuthenticated,
+    loginRider,
     showToast
   } = useApp();
+
+  const [riderUsername, setRiderUsername] = useState('');
+  const [riderPassword, setRiderPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleRiderLogin = async (e) => {
+    e.preventDefault();
+    if (!riderUsername.trim() || !riderPassword) {
+      showToast('Please enter both rider ID/mobile and password', 'warning');
+      return;
+    }
+    setIsSubmitting(true);
+    const res = await loginRider(riderUsername, riderPassword);
+    setIsSubmitting(false);
+    if (!res.success) {
+      showToast(res.message || 'Invalid rider credentials.', 'warning');
+    }
+  };
+
+  if (!isRiderAuthenticated) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center p-3 sm:p-4">
+        <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-2xl space-y-5 sm:space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto text-3xl shadow-xl shadow-emerald-950/50">
+              🛵
+            </div>
+            <h2 className="text-2xl font-black text-white font-serif">Rab Razi Rider Portal</h2>
+            <p className="text-xs text-zinc-400">
+              Delivery Fleet & GPS Telemetry Authentication
+            </p>
+          </div>
+
+          <form onSubmit={handleRiderLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-zinc-300">Rider Phone / Email</label>
+              <input
+                type="text"
+                required
+                value={riderUsername}
+                onChange={(e) => setRiderUsername(e.target.value)}
+                placeholder="Rider mobile number or email"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-zinc-300">Password</label>
+              <input
+                type="password"
+                required
+                value={riderPassword}
+                onChange={(e) => setRiderPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-zinc-950 font-black py-3.5 rounded-2xl text-xs shadow-lg shadow-emerald-950/40 transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60"
+            >
+              {isSubmitting ? 'Verifying Rider Account...' : 'Log In to Rider Portal'}
+            </button>
+          </form>
+
+          <div className="pt-2 border-t border-zinc-800/80 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={switchToUser}
+              className="w-full py-2 text-zinc-400 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Customer App</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Select active rider (default to first rider)
   const [selectedRiderId, setSelectedRiderId] = useState(() => riders[0]?.id || 'rider-1');

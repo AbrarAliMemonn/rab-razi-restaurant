@@ -13,7 +13,10 @@ import {
   Banknote, 
   Smartphone,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  MessageCircle,
+  Copy,
+  Check
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -48,6 +51,15 @@ export default function CartDrawer() {
   });
   const [orderNotes, setOrderNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
+  const [transactionId, setTransactionId] = useState('');
+  const [copiedAccount, setCopiedAccount] = useState(false);
+
+  const handleCopyAccount = (number) => {
+    navigator.clipboard.writeText(number);
+    setCopiedAccount(true);
+    showToast(`Account number ${number} copied to clipboard! 📋`, 'info');
+    setTimeout(() => setCopiedAccount(false), 2500);
+  };
 
   // Auto-sync customer details when user logs in or drawer opens
   useEffect(() => {
@@ -101,7 +113,7 @@ export default function CartDrawer() {
   };
 
   const handlePlaceOrder = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
 
     if (cart.length === 0) {
       showToast('Your cart is empty!', 'warning');
@@ -109,17 +121,17 @@ export default function CartDrawer() {
     }
 
     if (!customerName.trim()) {
-      showToast('Please enter your name', 'warning');
+      showToast('Please enter your full name', 'warning');
       return;
     }
 
     if (!customerPhone.trim() || customerPhone.length < 10) {
-      showToast('Please enter a valid phone number', 'warning');
+      showToast('Please enter a valid phone number (at least 10 digits)', 'warning');
       return;
     }
 
     if (deliveryMode === 'delivery' && !customerAddress.trim()) {
-      showToast('Please enter your delivery address', 'warning');
+      showToast('Please enter your delivery address in Tando Bago', 'warning');
       return;
     }
 
@@ -127,11 +139,13 @@ export default function CartDrawer() {
 
     setTimeout(() => {
       placeOrder({
-        customerName,
-        customerPhone,
-        customerAddress,
-        notes: orderNotes,
+        customerName: customerName.trim(),
+        customerPhone: customerPhone.trim(),
+        customerAddress: deliveryMode === 'delivery' ? customerAddress.trim() : settings.address,
+        deliveryType: deliveryMode === 'delivery' ? 'Delivery' : 'Takeaway',
+        notes: orderNotes.trim(),
         paymentMethod,
+        transactionId: transactionId.trim(),
         subtotal: cartSubtotal,
         deliveryFee,
         discount: discountAmount,
@@ -139,6 +153,89 @@ export default function CartDrawer() {
       });
       setIsCheckingOut(false);
     }, 600);
+  };
+
+  const handleWhatsAppOrder = (e) => {
+    if (e) e.preventDefault();
+
+    if (cart.length === 0) {
+      showToast('Your cart is empty!', 'warning');
+      return;
+    }
+
+    if (!customerName.trim()) {
+      showToast('Please enter your full name', 'warning');
+      return;
+    }
+
+    if (!customerPhone.trim() || customerPhone.length < 10) {
+      showToast('Please enter a valid phone number (at least 10 digits)', 'warning');
+      return;
+    }
+
+    if (deliveryMode === 'delivery' && !customerAddress.trim()) {
+      showToast('Please enter your delivery address in Tando Bago', 'warning');
+      return;
+    }
+
+    setIsCheckingOut(true);
+
+    const orderId = placeOrder({
+      customerName: customerName.trim(),
+      customerPhone: customerPhone.trim(),
+      customerAddress: deliveryMode === 'delivery' ? customerAddress.trim() : settings.address,
+      deliveryType: deliveryMode === 'delivery' ? 'Delivery' : 'Takeaway',
+      notes: orderNotes.trim(),
+      paymentMethod,
+      transactionId: transactionId.trim(),
+      subtotal: cartSubtotal,
+      deliveryFee,
+      discount: discountAmount,
+      total: grandTotal
+    });
+
+    const waNumber = settings.whatsappRaw || '923009998877';
+    const dateStr = new Date().toLocaleString('en-PK', { dateStyle: 'medium', timeStyle: 'short' });
+
+    const itemsList = cart.map((item, idx) => {
+      const details = [];
+      if (item.portion) details.push(item.portion);
+      if (item.spice) details.push(item.spice);
+      const extra = details.length > 0 ? ` (${details.join(', ')})` : '';
+      return `${idx + 1}. *${item.name}* x ${item.quantity} = Rs. ${(item.price * item.quantity).toLocaleString()}${extra}`;
+    }).join('\n');
+
+    let msg = `🍗 *RAB RAZI RESTAURANT ORDER*\n`;
+    msg += `🆔 *Order ID:* #${orderId}\n`;
+    msg += `📅 *Date & Time:* ${dateStr}\n\n`;
+    msg += `👤 *Customer Details:*\n`;
+    msg += `• Name: ${customerName.trim()}\n`;
+    msg += `• Phone: ${customerPhone.trim()}\n`;
+    msg += `• Delivery Type: ${deliveryMode === 'delivery' ? '🛵 Home Delivery' : '🥡 Takeaway Pickup'}\n`;
+    msg += `• Address: ${deliveryMode === 'delivery' ? customerAddress.trim() : settings.address}\n`;
+    if (orderNotes.trim()) {
+      msg += `• Special Instructions: "${orderNotes.trim()}"\n`;
+    }
+    msg += `\n🛒 *Order Items:*\n${itemsList}\n\n`;
+    msg += `💰 *Bill Summary:*\n`;
+    msg += `• Subtotal: Rs. ${cartSubtotal.toLocaleString()}\n`;
+    msg += `• Delivery Fee: ${deliveryFee === 0 ? 'FREE' : `Rs. ${deliveryFee}`}\n`;
+    if (discountAmount > 0) {
+      msg += `• Discount (${appliedPromo?.code || 'Promo'}): -Rs. ${discountAmount.toLocaleString()}\n`;
+    }
+    msg += `• *Grand Total: Rs. ${grandTotal.toLocaleString()} PKR*\n`;
+    msg += `• Payment Method: ${paymentMethod}\n`;
+    if (transactionId.trim()) {
+      msg += `• *Transaction ID (TID):* ${transactionId.trim()}\n`;
+    }
+    msg += `\n📍 *Rab Razi Restaurant - Tando Bago, Sindh*\n`;
+    msg += `Please confirm my order and share preparation time. Thank you!`;
+
+    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, '_blank');
+
+    setIsCheckingOut(false);
+    showToast(`Order #${orderId} confirmed! Opening WhatsApp... 💬`, 'success');
   };
 
   return (
@@ -442,6 +539,65 @@ export default function CartDrawer() {
                       );
                     })}
                   </div>
+
+                  {/* Manual JazzCash / EasyPaisa Transfer Card */}
+                  {(paymentMethod === 'JazzCash' || paymentMethod === 'EasyPaisa') && (
+                    <div className="mt-3 p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-amber-600/10 border border-amber-500/30 space-y-2.5 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-amber-400 flex items-center gap-1.5">
+                          <span>{paymentMethod} Official Account:</span>
+                        </span>
+                        <span className="text-[10px] bg-zinc-900 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 font-semibold">
+                          Manual Transfer
+                        </span>
+                      </div>
+
+                      <div className="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800 flex items-center justify-between">
+                        <div>
+                          <div className="text-[10px] text-zinc-500 uppercase font-semibold">
+                            Title: <span className="text-zinc-200 font-bold">{settings.paymentAccounts?.[paymentMethod === 'JazzCash' ? 'jazzCash' : 'easyPaisa']?.title || 'Rab Razi Restaurant'}</span>
+                          </div>
+                          <div className="text-sm font-black text-amber-400 font-mono tracking-wider mt-0.5">
+                            {settings.paymentAccounts?.[paymentMethod === 'JazzCash' ? 'jazzCash' : 'easyPaisa']?.number || '0300-9998877'}
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleCopyAccount(settings.paymentAccounts?.[paymentMethod === 'JazzCash' ? 'jazzCash' : 'easyPaisa']?.number || '0300-9998877')}
+                          className="px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer border border-zinc-700"
+                        >
+                          {copiedAccount ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-amber-400" />}
+                          <span>{copiedAccount ? 'Copied' : 'Copy'}</span>
+                        </button>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-zinc-300 block">
+                          Transaction ID (TID) / Reference Number:
+                        </label>
+                        <input
+                          type="text"
+                          value={transactionId}
+                          onChange={(e) => setTransactionId(e.target.value)}
+                          placeholder="e.g. 1048291048 (from SMS or receipt)"
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+                        />
+                        <p className="text-[10px] text-zinc-400">
+                          Transfer Rs. {grandTotal.toLocaleString()} and enter TID above for instant kitchen approval.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Delivery Coverage Policy Card */}
+              <div className="bg-zinc-900/60 p-3 rounded-2xl border border-zinc-800/80 text-[11px] text-zinc-400 flex items-start gap-2.5">
+                <Bike className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-zinc-200 font-bold block">Delivery Radius & Free Threshold:</span>
+                  <span>{settings.deliveryRadiusText || 'Tando Bago City & Surrounding Areas (Within 5 km radius)'}. Orders above Rs. {settings.freeDeliveryThreshold || 1500} qualify for FREE delivery.</span>
                 </div>
               </div>
 
@@ -480,18 +636,35 @@ export default function CartDrawer() {
 
         </div>
 
-        {/* Drawer Footer with Checkout Button */}
+        {/* Drawer Footer with Both WhatsApp & In-App Checkout Options */}
         {cart.length > 0 && (
-          <div className="p-4 sm:p-5 border-t border-zinc-800 bg-zinc-900/90">
+          <div className="p-4 sm:p-5 border-t border-zinc-800 bg-zinc-900/95 space-y-2">
+            {/* Primary Action 1: Instant WhatsApp Order */}
+            <button
+              onClick={handleWhatsAppOrder}
+              disabled={isCheckingOut}
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 px-4 rounded-2xl shadow-xl shadow-emerald-950/50 flex items-center justify-between transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer group"
+            >
+              <div className="flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-white animate-pulse" />
+                <span className="text-xs sm:text-sm">Order on WhatsApp 💬</span>
+              </div>
+              <span className="bg-emerald-950/60 border border-emerald-400/30 px-3 py-1 rounded-xl text-xs font-black">
+                Rs. {grandTotal.toLocaleString()}
+              </span>
+            </button>
+
+            {/* Primary Action 2: App Place Order */}
             <button
               onClick={handlePlaceOrder}
               disabled={isCheckingOut}
-              className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black py-3.5 px-4 rounded-2xl shadow-xl shadow-orange-950/40 flex items-center justify-between transition-all active:scale-[0.98] disabled:opacity-50"
+              className="w-full bg-zinc-800 hover:bg-zinc-700 text-amber-400 font-bold py-2.5 px-4 rounded-2xl border border-zinc-700 flex items-center justify-between transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer text-xs"
             >
               <div className="flex items-center gap-2">
-                <span>{isCheckingOut ? 'Placing Order...' : 'Confirm & Place Order'}</span>
+                <ShoppingBag className="w-4 h-4" />
+                <span>{isCheckingOut ? 'Placing Order...' : 'Confirm & Place in App'}</span>
               </div>
-              <span className="bg-zinc-950/30 px-3 py-1 rounded-xl text-xs font-black">
+              <span className="text-zinc-400 text-xs">
                 Rs. {grandTotal.toLocaleString()}
               </span>
             </button>

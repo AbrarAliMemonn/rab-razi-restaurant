@@ -338,7 +338,9 @@ export const INITIAL_SETTINGS = {
   restaurantName: 'Rab Razi Restaurant',
   tagline: 'Taste of Blessing & Royal Hospitality',
   phone: '0300-9998877',
-  address: 'Rab Razi Restaurant, Tando Bago, Sindh (Plus Code: QXQ6+C96)',
+  whatsapp: '0300-9998877',
+  whatsappRaw: '923009998877',
+  address: 'Main Badin-Mirpurkhas Road, Tando Bago, Sindh',
   city: 'Tando Bago',
   district: 'Badin',
   province: 'Sindh',
@@ -351,10 +353,28 @@ export const INITIAL_SETTINGS = {
   openingHours: '12:00 PM – 02:00 AM',
   deliveryFee: 80,
   freeDeliveryThreshold: 1500,
+  deliveryRadiusText: 'Tando Bago City & Surrounding Areas (Within 5 km radius)',
   estimatedDeliveryTime: '25-35 min',
   promoCode: 'RAZI20',
   promoDiscountPercent: 20,
-  announcement: '🎉 Rab Razi Restaurant, Tando Bago: Flat 20% OFF using code "RAZI20" on all orders!'
+  announcement: '🎉 Rab Razi Restaurant, Tando Bago: Flat 20% OFF using code "RAZI20" on all orders!',
+  paymentAccounts: {
+    jazzCash: {
+      title: 'Rab Razi Restaurant',
+      number: '0300-9998877',
+      instructions: 'Transfer order amount via JazzCash App to account 0300-9998877'
+    },
+    easyPaisa: {
+      title: 'Rab Razi Restaurant',
+      number: '0300-9998877',
+      instructions: 'Send money via EasyPaisa App to account 0300-9998877'
+    }
+  },
+  socials: {
+    facebook: 'https://facebook.com/rabrazirestaurant',
+    instagram: 'https://instagram.com/rabrazirestaurant',
+    tiktok: 'https://tiktok.com/@rabrazirestaurant'
+  }
 };
 
 export const INITIAL_RIDERS = [

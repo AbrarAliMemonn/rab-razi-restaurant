@@ -296,9 +296,20 @@ export default function AdminPanel() {
     );
   };
 
-  const handleLoginSubmit = (e) => {
+  const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
+
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    loginAdmin(loginUsername, loginPassword);
+    if (!loginUsername.trim() || !loginPassword) {
+      showToast('Please enter your admin email and password', 'warning');
+      return;
+    }
+    setIsSubmittingLogin(true);
+    const result = await loginAdmin(loginUsername, loginPassword);
+    setIsSubmittingLogin(false);
+    if (!result?.success) {
+      showToast(result?.message || 'Invalid admin credentials.', 'warning');
+    }
   };
 
   // Quick WhatsApp Link Helper
@@ -333,7 +344,7 @@ export default function AdminPanel() {
                 required
                 value={loginUsername}
                 onChange={(e) => setLoginUsername(e.target.value)}
-                placeholder="abraralimemon23@gmail.com"
+                placeholder="admin@rabrazi.com or mobile"
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
               />
             </div>
@@ -352,9 +363,10 @@ export default function AdminPanel() {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black py-3.5 rounded-2xl text-xs shadow-lg shadow-orange-950/40 transition-all active:scale-[0.98] cursor-pointer"
+              disabled={isSubmittingLogin}
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black py-3.5 rounded-2xl text-xs shadow-lg shadow-orange-950/40 transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60"
             >
-              Log In to Admin Dashboard
+              {isSubmittingLogin ? 'Verifying Credentials...' : 'Log In to Admin Dashboard'}
             </button>
           </form>
 

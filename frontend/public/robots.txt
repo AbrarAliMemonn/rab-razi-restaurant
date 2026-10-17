@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /rider
+Disallow: /api/
+
+Sitemap: https://rab-razi-restaurant.vercel.app/sitemap.xml
